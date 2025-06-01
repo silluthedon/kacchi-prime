@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useOrderContext } from '../../context/OrderContext';
-
+import { supabase } from '../../supabaseClient';
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,7 +25,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
   const [deliveryDate, setDeliveryDate] = useState<Date | null>(getNextFriday());
   const [paymentStep, setPaymentStep] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
-  
+  const [formData, setFormData] = useState<FormValues | null>(null); // ফর্ম ডাটা স্টেটে সেভ করার জন্য
+
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       packageId: selectedPackage
@@ -34,8 +35,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
 
   function getNextFriday(): Date {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 is Sunday, 5 is Friday
-    const daysToAdd = (5 - dayOfWeek + 7) % 7 || 7; // If today is Friday, get next Friday
+    const dayOfWeek = today.getDay();
+    const daysToAdd = (5 - dayOfWeek + 7) % 7 || 7;
     
     const nextFriday = new Date(today);
     nextFriday.setDate(today.getDate() + daysToAdd);
@@ -43,27 +44,56 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
   }
 
   const isFriday = (date: Date): boolean => {
-    return date.getDay() === 5; // 5 represents Friday
+    return date.getDay() === 5;
   };
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    // In a real app, this would send the data to the server
+    setFormData(data); // ফর্ম ডাটা স্টেটে সেভ করা
     console.log({ ...data, deliveryDate });
     setPaymentStep(true);
   };
 
-  const handlePayment = () => {
-    // In a real app, this would integrate with a payment gateway
+const handlePayment = async () => {
+  if (!formData) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .insert([
+        {
+          customer_name: formData.name,
+          item: formData.packageId,
+          quantity: 1,
+          phone: formData.phone,
+          email: formData.email,
+          address: formData.address,
+          additional_info: formData.additionalInfo,
+          delivery_date: deliveryDate?.toISOString(),
+        },
+      ]);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      alert('Error saving order: ' + error.message);
+      setPaymentStep(false);
+      return;
+    }
+
+    console.log('Order saved successfully:', data);
     setTimeout(() => {
       setOrderConfirmed(true);
     }, 1500);
-  };
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    alert('Unexpected error: ' + (err as Error).message);
+    setPaymentStep(false);
+  }
+};
 
   const formatPrice = (packageId: string): string => {
     const pkg = packages.find(p => p.id === packageId);
     if (!pkg) return '0';
     
-    // 50% of the total price
     const bookingAmount = pkg.price * 0.5;
     return bookingAmount.toLocaleString();
   };
@@ -89,8 +119,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
           {orderConfirmed ? (
             <div className="text-center py-8">
               <div className="w-20 h-20 rounded-full bg-green-600 mx-auto flex items-center justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg\" className="h-10 w-10 text-white\" fill="none\" viewBox="0 0 24 24\" stroke="currentColor">
-                  <path strokeLinecap="round\" strokeLinejoin="round\" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-10 w-10 text-white" 
+                  fill="none" 
+                  viewBox="0 0 24 24" // অতিরিক্ত \ রিমুভ করা হয়েছে
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <h4 className="text-2xl font-bold text-[#FFD700] mb-4">অর্ডার কনফার্মড!</h4>
