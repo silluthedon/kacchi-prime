@@ -50,7 +50,6 @@ const Header: React.FC = () => {
               className="h-16 w-auto mr-3 object-contain"
             />
           </RouterLink>
-          <h1 className="text-[#FFD700] text-2xl font-bold font-serif">Kacchi Prime</h1>
         </div>
         
         {user === null ? ( // user === null হলে মেনু দেখানো
