@@ -4,8 +4,13 @@ import { supabase } from '../utils/supabaseClient';
 
 const AdminPage = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [orderStatusFilter, setOrderStatusFilter] = useState('All');
+  const [deliveryStatusFilter, setDeliveryStatusFilter] = useState('All');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('created_at_desc'); // Default sort: newest first
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,12 +47,15 @@ const AdminPage = () => {
         if (error) {
           console.error('Error fetching orders:', error);
           setOrders([]);
+          setFilteredOrders([]);
         } else {
           setOrders(data);
+          setFilteredOrders(data);
         }
       } catch (error) {
         console.error('Error:', error);
         setOrders([]);
+        setFilteredOrders([]);
       } finally {
         setLoading(false);
       }
@@ -55,6 +63,35 @@ const AdminPage = () => {
 
     checkUser();
   }, [navigate]);
+
+  // ফিল্টার এবং সর্টিং ফাংশন
+  useEffect(() => {
+    let updatedOrders = [...orders];
+
+    // ফিল্টারিং (অ্যালগরিদম: ফিল্টার মেথড)
+    if (orderStatusFilter !== 'All') {
+      updatedOrders = updatedOrders.filter(order => order.order_status === orderStatusFilter);
+    }
+    if (deliveryStatusFilter !== 'All') {
+      updatedOrders = updatedOrders.filter(order => order.delivery_status === deliveryStatusFilter);
+    }
+    if (paymentStatusFilter !== 'All') {
+      updatedOrders = updatedOrders.filter(order => order.payment_status === paymentStatusFilter);
+    }
+
+    // সর্টিং (অ্যালগরিদম: সর্ট মেথড)
+    if (sortBy === 'created_at_desc') {
+      updatedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortBy === 'created_at_asc') {
+      updatedOrders.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortBy === 'delivery_date_asc') {
+      updatedOrders.sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+    } else if (sortBy === 'delivery_date_desc') {
+      updatedOrders.sort((a, b) => new Date(b.delivery_date) - new Date(a.delivery_date));
+    }
+
+    setFilteredOrders(updatedOrders);
+  }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, sortBy]);
 
   const handleStatusChange = async (orderId, field, newStatus) => {
     try {
@@ -69,7 +106,6 @@ const AdminPage = () => {
         return;
       }
 
-      // আপডেট করার পর অর্ডার লিস্ট রিফ্রেশ করুন
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, [field]: newStatus } : order
@@ -98,9 +134,67 @@ const AdminPage = () => {
           লগআউট
         </button>
       </div>
+
+      {/* ফিল্টার এবং সর্টিং UI */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <div>
+          <label className="block text-sm mb-1">অর্ডার স্ট্যাটাস ফিল্টার</label>
+          <select
+            value={orderStatusFilter}
+            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="All">সব</option>
+            <option value="Ordered">Ordered</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Date Assigned">Date Assigned</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">ডেলিভারি স্ট্যাটাস ফিল্টার</label>
+          <select
+            value={deliveryStatusFilter}
+            onChange={(e) => setDeliveryStatusFilter(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="All">সব</option>
+            <option value="OnTheWay">On The Way</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Returned">Returned</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">পেমেন্ট স্ট্যাটাস ফিল্টার</label>
+          <select
+            value={paymentStatusFilter}
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="All">সব</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="FullyPaid">Fully Paid</option>
+            <option value="PartiallyPaid">Partially Paid</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">সাজানো</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="created_at_desc">নতুন থেকে পুরোনো (অর্ডারের তারিখ)</option>
+            <option value="created_at_asc">পুরোনো থেকে নতুন (অর্ডারের তারিখ)</option>
+            <option value="delivery_date_asc">পুরোনো থেকে নতুন (ডেলিভারি তারিখ)</option>
+            <option value="delivery_date_desc">নতুন থেকে পুরোনো (ডেলিভারি তারিখ)</option>
+          </select>
+        </div>
+      </div>
+
       {loading ? (
         <p className="text-lg">লোড হচ্ছে...</p>
-      ) : orders.length === 0 ? (
+      ) : filteredOrders.length === 0 ? (
         <p className="text-lg">কোনো অর্ডার নেই।</p>
       ) : (
         <div className="overflow-x-auto">
@@ -123,7 +217,7 @@ const AdminPage = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-900">
                   <td className="border border-gray-700 p-3">{order.id}</td>
                   <td className="border border-gray-700 p-3">{order.customer_name || 'N/A'}</td>
