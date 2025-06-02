@@ -10,4 +10,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  esbuild: {
+    loader: 'tsx', // .tsx ফাইলের জন্য লোডার সেট করা
+    include: [
+      'src/**/*.js',
+      'src/**/*.jsx',
+      'src/**/*.ts',
+      'src/**/*.tsx',
+    ],
+  },
 });

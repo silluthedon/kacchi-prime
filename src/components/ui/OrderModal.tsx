@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useOrderContext } from '../../context/OrderContext';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../utils/supabaseClient';
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
