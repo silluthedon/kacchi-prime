@@ -10,7 +10,8 @@ const AdminPage = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState('All');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('created_at_desc'); // Default sort: newest first
+  const [sortBy, setSortBy] = useState('created_at_desc');
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,11 +65,20 @@ const AdminPage = () => {
     checkUser();
   }, [navigate]);
 
-  // ফিল্টার এবং সর্টিং ফাংশন
+  // ফিল্টার, সার্চ, এবং সর্টিং ফাংশন
   useEffect(() => {
     let updatedOrders = [...orders];
 
-    // ফিল্টারিং (অ্যালগরিদম: ফিল্টার মেথড)
+    // সার্চ
+    if (searchQuery) {
+      updatedOrders = updatedOrders.filter(order =>
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.phone?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // ফিল্টারিং
     if (orderStatusFilter !== 'All') {
       updatedOrders = updatedOrders.filter(order => order.order_status === orderStatusFilter);
     }
@@ -79,7 +89,7 @@ const AdminPage = () => {
       updatedOrders = updatedOrders.filter(order => order.payment_status === paymentStatusFilter);
     }
 
-    // সর্টিং (অ্যালগরিদম: সর্ট মেথড)
+    // সর্টিং
     if (sortBy === 'created_at_desc') {
       updatedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else if (sortBy === 'created_at_asc') {
@@ -91,7 +101,7 @@ const AdminPage = () => {
     }
 
     setFilteredOrders(updatedOrders);
-  }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, sortBy]);
+  }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, sortBy, searchQuery]);
 
   const handleStatusChange = async (orderId, field, newStatus) => {
     try {
@@ -118,6 +128,29 @@ const AdminPage = () => {
     }
   };
 
+  const getStatusColor = (status, type) => {
+    if (type === 'order_status') {
+      return {
+        'Ordered': 'bg-orange-500',
+        'Confirmed': 'bg-blue-500',
+        'Date Assigned': 'bg-purple-500',
+        'Delivered': 'bg-green-500',
+      }[status] || 'bg-gray-500';
+    } else if (type === 'delivery_status') {
+      return {
+        'OnTheWay': 'bg-yellow-500',
+        'Delivered': 'bg-green-500',
+        'Returned': 'bg-red-500',
+      }[status] || 'bg-gray-500';
+    } else if (type === 'payment_status') {
+      return {
+        'Unpaid': 'bg-gray-500',
+        'PartiallyPaid': 'bg-orange-500',
+        'FullyPaid': 'bg-green-500',
+      }[status] || 'bg-gray-500';
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -133,6 +166,17 @@ const AdminPage = () => {
         >
           লগআউট
         </button>
+      </div>
+
+      {/* সার্চ বার */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="অর্ডার আইডি, কাস্টমার নাম, বা ফোন নম্বর দিয়ে সার্চ করুন"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full max-w-md px-4 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600 text-white"
+        />
       </div>
 
       {/* ফিল্টার এবং সর্টিং UI */}
@@ -193,7 +237,12 @@ const AdminPage = () => {
       </div>
 
       {loading ? (
-        <p className="text-lg">লোড হচ্ছে...</p>
+        <div className="flex justify-center items-center">
+          <svg className="animate-spin h-8 w-8 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
       ) : filteredOrders.length === 0 ? (
         <p className="text-lg">কোনো অর্ডার নেই।</p>
       ) : (
@@ -238,38 +287,53 @@ const AdminPage = () => {
                       : 'N/A'}
                   </td>
                   <td className="border border-gray-700 p-3">
-                    <select
-                      value={order.order_status}
-                      onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
-                      className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
-                    >
-                      <option value="Ordered">Ordered</option>
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Date Assigned">Date Assigned</option>
-                      <option value="Delivered">Delivered</option>
-                    </select>
+                    <div className="relative inline-block">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.order_status, 'order_status')}`}>
+                        {order.order_status}
+                      </span>
+                      <select
+                        value={order.order_status}
+                        onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      >
+                        <option value="Ordered">Ordered</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Date Assigned">Date Assigned</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </div>
                   </td>
                   <td className="border border-gray-700 p-3">
-                    <select
-                      value={order.delivery_status}
-                      onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
-                      className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
-                    >
-                      <option value="OnTheWay">On The Way</option>
-                      <option value="Delivered">Delivered</option>
-                      <option value="Returned">Returned</option>
-                    </select>
+                    <div className="relative inline-block">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
+                        {order.delivery_status}
+                      </span>
+                      <select
+                        value={order.delivery_status}
+                        onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      >
+                        <option value="OnTheWay">On The Way</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Returned">Returned</option>
+                      </select>
+                    </div>
                   </td>
                   <td className="border border-gray-700 p-3">
-                    <select
-                      value={order.payment_status}
-                      onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
-                      className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
-                    >
-                      <option value="Unpaid">Unpaid</option>
-                      <option value="FullyPaid">Fully Paid</option>
-                      <option value="PartiallyPaid">Partially Paid</option>
-                    </select>
+                    <div className="relative inline-block">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.payment_status, 'payment_status')}`}>
+                        {order.payment_status}
+                      </span>
+                      <select
+                        value={order.payment_status}
+                        onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      >
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="FullyPaid">Fully Paid</option>
+                        <option value="PartiallyPaid">Partially Paid</option>
+                      </select>
+                    </div>
                   </td>
                 </tr>
               ))}
