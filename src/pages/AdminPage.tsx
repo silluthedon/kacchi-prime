@@ -12,6 +12,7 @@ const AdminPage = () => {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [searchQuery, setSearchQuery] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,9 +96,17 @@ const AdminPage = () => {
     } else if (sortBy === 'created_at_asc') {
       updatedOrders.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     } else if (sortBy === 'delivery_date_asc') {
-      updatedOrders.sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+      updatedOrders.sort((a, b) => {
+        if (!a.delivery_date) return 1;
+        if (!b.delivery_date) return -1;
+        return new Date(a.delivery_date) - new Date(b.delivery_date);
+      });
     } else if (sortBy === 'delivery_date_desc') {
-      updatedOrders.sort((a, b) => new Date(b.delivery_date) - new Date(a.delivery_date));
+      updatedOrders.sort((a, b) => {
+        if (!a.delivery_date) return 1;
+        if (!b.delivery_date) return -1;
+        return new Date(b.delivery_date) - new Date(a.delivery_date);
+      });
     }
 
     setFilteredOrders(updatedOrders);
@@ -122,6 +131,32 @@ const AdminPage = () => {
         )
       );
       alert(`${field} সফলভাবে আপডেট করা হয়েছে!`);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('অজানা ত্রুটি: ' + err.message);
+    }
+  };
+
+  // ডেলিভারি ডেট আপডেট ফাংশন
+  const handleDeliveryDateChange = async (orderId, newDeliveryDate) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ delivery_date: newDeliveryDate })
+        .eq('id', orderId);
+
+      if (error) {
+        console.error('Error updating delivery date:', error);
+        alert('ডেলিভারি ডেট আপডেটে ত্রুটি: ' + error.message);
+        return;
+      }
+
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, delivery_date: newDeliveryDate } : order
+        )
+      );
+      alert('ডেলিভারি ডেট সফলভাবে আপডেট করা হয়েছে!');
     } catch (err) {
       console.error('Unexpected error:', err);
       alert('অজানা ত্রুটি: ' + err.message);
@@ -277,9 +312,15 @@ const AdminPage = () => {
                   <td className="border border-gray-700 p-3">{order.address || 'N/A'}</td>
                   <td className="border border-gray-700 p-3">{order.additional_info || 'N/A'}</td>
                   <td className="border border-gray-700 p-3">
-                    {order.delivery_date
-                      ? new Date(order.delivery_date).toLocaleDateString('bn-BD')
-                      : 'N/A'}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={order.delivery_date ? order.delivery_date.split('T')[0] : ''}
+                        onChange={(e) => handleDeliveryDateChange(order.id, e.target.value)}
+                        className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
+                        min={new Date().toISOString().split('T')[0]} // আজকের তারিখের আগে ডেট নির্বাচন করা যাবে না
+                      />
+                    </div>
                   </td>
                   <td className="border border-gray-700 p-3">
                     {order.created_at
