@@ -3,7 +3,7 @@ import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
-import Logo from '../assets/kacchi-prime-logo.png'; // পাথ ঠিক করা হয়েছে
+import Logo from '../assets/kacchi-prime-logo.png'; // পাথ ঠিক আছে
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,13 +45,17 @@ const Header: React.FC = () => {
             <img
               src={Logo}
               alt="Kacchi Prime Logo"
-              className="h-16 w-auto mr-3" // h-10 থেকে h-16 করা হয়েছে
+              className="h-16 w-auto mr-3 object-contain"
             />
           </RouterLink>
+          <h1 className="text-[#FFD700] text-2xl font-bold font-serif">Kacchi Prime</h1>
         </div>
         
         {!user ? (
           <div className="hidden md:flex space-x-8 text-white">
+            <RouterLink to="/admin" className="cursor-pointer hover:text-[#FFD700] transition-colors">
+              লগ ইন
+            </RouterLink>
             <ScrollLink to="special" smooth={true} duration={500} className="cursor-pointer hover:text-[#FFD700] transition-colors">
               বিশেষত্ব
             </ScrollLink>
@@ -101,6 +105,13 @@ const Header: React.FC = () => {
           <div className="flex flex-col items-center py-4 space-y-4 text-white">
             {!user ? (
               <>
+                <RouterLink 
+                  to="/admin" 
+                  className="w-full text-center py-2 hover:bg-gray-900"
+                  onClick={() => setIsOpen(false)}
+                >
+                  লগ ইন
+                </RouterLink>
                 <ScrollLink 
                   to="special" 
                   smooth={true} 
