@@ -56,26 +56,26 @@ const AdminPage = () => {
     checkUser();
   }, [navigate]);
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, field, newStatus) => {
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ order_status: newStatus })
+        .update({ [field]: newStatus })
         .eq('id', orderId);
 
       if (error) {
-        console.error('Error updating status:', error);
-        alert('স্ট্যাটাস আপডেটে ত্রুটি: ' + error.message);
+        console.error(`Error updating ${field}:`, error);
+        alert(`${field} আপডেটে ত্রুটি: ` + error.message);
         return;
       }
 
       // আপডেট করার পর অর্ডার লিস্ট রিফ্রেশ করুন
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
-          order.id === orderId ? { ...order, order_status: newStatus } : order
+          order.id === orderId ? { ...order, [field]: newStatus } : order
         )
       );
-      alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
+      alert(`${field} সফলভাবে আপডেট করা হয়েছে!`);
     } catch (err) {
       console.error('Unexpected error:', err);
       alert('অজানা ত্রুটি: ' + err.message);
@@ -118,6 +118,8 @@ const AdminPage = () => {
                 <th className="border border-gray-700 p-3 text-left">ডেলিভারি তারিখ</th>
                 <th className="border border-gray-700 p-3 text-left">অর্ডারের তারিখ</th>
                 <th className="border border-gray-700 p-3 text-left">অর্ডার স্ট্যাটাস</th>
+                <th className="border border-gray-700 p-3 text-left">ডেলিভারি স্ট্যাটাস</th>
+                <th className="border border-gray-700 p-3 text-left">পেমেন্ট স্ট্যাটাস</th>
               </tr>
             </thead>
             <tbody>
@@ -144,13 +146,35 @@ const AdminPage = () => {
                   <td className="border border-gray-700 p-3">
                     <select
                       value={order.order_status}
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
                       className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
                     >
                       <option value="Ordered">Ordered</option>
                       <option value="Confirmed">Confirmed</option>
                       <option value="Date Assigned">Date Assigned</option>
                       <option value="Delivered">Delivered</option>
+                    </select>
+                  </td>
+                  <td className="border border-gray-700 p-3">
+                    <select
+                      value={order.delivery_status}
+                      onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
+                      className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
+                    >
+                      <option value="OnTheWay">On The Way</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Returned">Returned</option>
+                    </select>
+                  </td>
+                  <td className="border border-gray-700 p-3">
+                    <select
+                      value={order.payment_status}
+                      onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
+                      className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
+                    >
+                      <option value="Unpaid">Unpaid</option>
+                      <option value="FullyPaid">Fully Paid</option>
+                      <option value="PartiallyPaid">Partially Paid</option>
                     </select>
                   </td>
                 </tr>
