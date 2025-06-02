@@ -3,7 +3,7 @@ import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
-import Logo from '../assets/kacchi-prime-logo.png'; // পাথ ঠিক আছে
+import Logo from '../assets/kacchi-prime-logo.png';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,26 +11,28 @@ const Header: React.FC = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
 
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-
-    window.addEventListener('scroll', handleScroll);
     checkUser();
 
+    window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, []); // প্রথম রেন্ডারে চেক করার জন্য
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    navigate('/login');
+    setUser(null); // স্টেটটি তৎক্ষণাৎ null করা
+    await checkUser(); // আবার চেক করা নিশ্চিত করার জন্য
+    setIsOpen(false); // মোবাইল মেনু বন্ধ করা
+    navigate('/login'); // লগইন পেজে নেভিগেট
   };
 
   return (
@@ -51,7 +53,7 @@ const Header: React.FC = () => {
           <h1 className="text-[#FFD700] text-2xl font-bold font-serif">Kacchi Prime</h1>
         </div>
         
-        {!user ? (
+        {user === null ? ( // user === null হলে মেনু দেখানো
           <div className="hidden md:flex space-x-8 text-white">
             <RouterLink to="/admin" className="cursor-pointer hover:text-[#FFD700] transition-colors">
               লগ ইন
@@ -81,7 +83,7 @@ const Header: React.FC = () => {
           </button>
         )}
         
-        {!user ? (
+        {user === null ? ( // user === null হলে অর্ডার করুন বাটন দেখানো
           <ScrollLink 
             to="order" 
             smooth={true} 
@@ -103,7 +105,7 @@ const Header: React.FC = () => {
       {isOpen && (
         <div className="md:hidden bg-black">
           <div className="flex flex-col items-center py-4 space-y-4 text-white">
-            {!user ? (
+            {user === null ? ( // user === null হলে মোবাইল মেনু দেখানো
               <>
                 <RouterLink 
                   to="/admin" 
@@ -169,10 +171,7 @@ const Header: React.FC = () => {
               </>
             ) : (
               <button 
-                onClick={() => {
-                  handleLogout();
-                  setIsOpen(false);
-                }}
+                onClick={handleLogout}
                 className="w-full bg-red-600 py-3 text-center font-bold"
               >
                 লগআউট
