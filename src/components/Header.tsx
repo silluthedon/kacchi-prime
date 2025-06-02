@@ -3,7 +3,7 @@ import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
-import Logo from '../assets/kacchi-prime-logo.png.png'; // পাথ ঠিক করা হয়েছে
+import Logo from '../assets/kacchi-prime-logo.png'; // পাথ ঠিক করা হয়েছে
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
