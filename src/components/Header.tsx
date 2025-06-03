@@ -57,7 +57,7 @@ const Header = () => {
             <img
               src={Logo}
               alt="Kacchi Prime Logo"
-              className="h-16 w-auto mr-3 object-contain"
+              className="h-20 w-auto mr-3 object-contain"
             />
           </RouterLink>
         </div>

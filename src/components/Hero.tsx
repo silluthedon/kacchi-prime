@@ -10,7 +10,7 @@ const Hero: React.FC = () => {
         <div 
           className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/90" 
           style={{ 
-            backgroundImage: "url('https://images.pexels.com/photos/7437719/pexels-photo-7437719.jpeg?auto=compress&cs=tinysrgb&w=1600')",
+            backgroundImage: "url('https://img.freepik.com/free-photo/close-up-rice-with-carrots-garnished-with-lamb-pieces-served-with-pickles-yogurt_141793-2051.jpg?semt=ais_hybrid&w=740')", // নতুন কাচ্চি বিরিয়ানি ছবি
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
