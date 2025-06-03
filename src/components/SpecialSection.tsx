@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import FeatureCard from './ui/FeatureCard';
+import { useTheme } from '../context/ThemeContext'; // ThemeContext থেকে useTheme ইমপোর্ট
 
 const SpecialSection: React.FC = () => {
+  const { isDarkMode } = useTheme(); // গ্লোবাল থিম স্টেট
+
   const features = [
     {
       image: "https://img.freepik.com/premium-photo/raw-lamb-chops-fresh-mutton-meat-cutlets-ribs-dark-background-top-view_89816-56454.jpg",
@@ -37,8 +40,14 @@ const SpecialSection: React.FC = () => {
   };
 
   return (
-    <section id="special" className="py-20 bg-black relative">
-      <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/6210939/pexels-photo-6210939.jpeg?auto=compress&cs=tinysrgb&w=1600')] bg-fixed opacity-5"></div>
+    <section id="special" className={`py-20 relative ${isDarkMode ? 'bg-black' : 'bg-gray-200'}`}>
+      <div 
+        className="absolute inset-0 bg-fixed opacity-5"
+        style={{
+          backgroundImage: `url('https://images.pexels.com/photos/6210939/pexels-photo-6210939.jpeg?auto=compress&cs=tinysrgb&w=1600')`,
+          filter: isDarkMode ? 'brightness(0.5)' : 'brightness(0.8)', // লাইট মোডে ব্যাকগ্রাউন্ড ছবি হালকা
+        }}
+      />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.h2 
@@ -48,8 +57,8 @@ const SpecialSection: React.FC = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-white">বিয়েবাড়ির কাচ্চির</span>
-          <span className="text-[#FFD700]"> সিক্রেট কি?</span>
+          <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>বিয়েবাড়ির কাচ্চির</span>
+          <span className={isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}> সিক্রেট কি?</span>
           <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-red-600"></span>
         </motion.h2>
         

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PackageCardProps {
   title: string;

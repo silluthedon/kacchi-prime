@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext'; // ThemeContext থেকে useTheme ইমপোর্ট
 
 const RaritySection: React.FC = () => {
+  const { isDarkMode } = useTheme(); // গ্লোবাল থিম স্টেট
+
   const points = [
     {
       number: "১",
@@ -22,8 +25,14 @@ const RaritySection: React.FC = () => {
   ];
 
   return (
-    <section id="rarity" className="py-24 bg-gradient-to-b from-black via-gray-900 to-black relative">
-      <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/6210775/pexels-photo-6210775.jpeg?auto=compress&cs=tinysrgb&w=1600')] bg-fixed opacity-5"></div>
+    <section id="rarity" className={`py-24 relative ${isDarkMode ? 'bg-gradient-to-b from-black via-gray-900 to-black' : 'bg-gradient-to-b from-gray-100 via-gray-200 to-gray-300'}`}>
+      <div 
+        className="absolute inset-0 bg-fixed opacity-5"
+        style={{
+          backgroundImage: `url('https://images.pexels.com/photos/6210775/pexels-photo-6210775.jpeg?auto=compress&cs=tinysrgb&w=1600')`,
+          filter: isDarkMode ? 'brightness(0.5)' : 'brightness(0.9)', // Light mode brightness adjustment
+        }}
+      />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.h2 
@@ -33,8 +42,8 @@ const RaritySection: React.FC = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-white">অনুষ্ঠান কিংবা বিয়েবাড়ি ছাড়া</span>
-          <span className="text-[#FFD700]"> এই কাচ্চি পাওয়া কঠিন কেন?</span>
+          <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>অনুষ্ঠান কিংবা বিয়েবাড়ি ছাড়া</span>
+          <span className={isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}> এই কাচ্চি পাওয়া কঠিন কেন?</span>
           <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-red-600"></span>
         </motion.h2>
         
@@ -48,25 +57,25 @@ const RaritySection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: index * 0.1 }}
             >
-              <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 mr-6">
+              <div className={`h-12 w-12 rounded-full ${isDarkMode ? 'bg-red-600' : 'bg-red-500'} flex items-center justify-center text-white font-bold text-xl flex-shrink-0 mr-6`}>
                 {point.number}
               </div>
               <div>
-                <p className="text-white text-lg">{point.text}</p>
+                <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{point.text}</p>
               </div>
             </motion.div>
           ))}
         </div>
         
         <motion.div
-          className="mt-20 p-8 border border-red-600 rounded-lg bg-gradient-to-r from-black via-gray-900 to-black text-center"
+          className={`mt-20 p-8 border rounded-lg text-center ${isDarkMode ? 'border-red-600 bg-gradient-to-r from-black via-gray-900 to-black' : 'border-gray-300 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300'}`}
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h3 className="text-2xl text-[#FFD700] font-semibold mb-4">কাচ্চি প্রাইম-এ আমরা সমাধান করেছি এই সমস্যাগুলো</h3>
-          <p className="text-lg text-white">আমাদের দক্ষ বাবুর্চিরা অথেনটিক রেসিপি অনুসরণ করে এবং প্রিমিয়াম উপাদান ব্যবহার করে প্রস্তুত করেন বিয়েবাড়ির স্বাদে কাচ্চি</p>
+          <h3 className={`text-2xl font-semibold mb-4 ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>কাচ্চি প্রাইম-এ আমরা সমাধান করেছি এই সমস্যাগুলো</h3>
+          <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>আমাদের দক্ষ বাবুর্চিরা অথেনটিক রেসিপি অনুসরণ করে এবং প্রিমিয়াম উপাদান ব্যবহার করে প্রস্তুত করেন বিয়েবাড়ির স্বাদে কাচ্চি</p>
         </motion.div>
       </div>
     </section>

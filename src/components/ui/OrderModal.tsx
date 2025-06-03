@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useOrderContext } from '../../context/OrderContext';
 import { supabase } from '../../utils/supabaseClient';
+import { useTheme } from '../../context/ThemeContext'; // Add this import
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ type FormValues = {
 };
 
 const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) => {
+  const { isDarkMode } = useTheme(); // Add theme context
   const { selectedPackage } = useOrderContext();
   const [deliveryDate, setDeliveryDate] = useState<Date | null>(getNextFriday());
   const [orderConfirmed, setOrderConfirmed] = useState(false);
@@ -56,8 +58,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
     const selectedPkg = packages.find(pkg => pkg.id === data.packageId);
     const { error: supabaseError } = await supabase.from('orders').insert({
       customer_name: data.name,
-      item: selectedPkg?.title || 'Unknown Package', // প্যাকেজের টাইটেল ব্যবহার করা হচ্ছে
-      quantity: 1, // ডিফল্টভাবে ১ সেট করা হয়েছে (ফর্মে quantity ফিল্ড নেই)
+      item: selectedPkg?.title || 'Unknown Package',
+      quantity: 1,
       phone: data.phone,
       email: data.email || null,
       address: data.address,
@@ -90,10 +92,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-black border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 ${
+      isDarkMode ? 'bg-black/70' : 'bg-gray-900/70'
+    } backdrop-blur-sm`}>
+      <div className={`bg-black border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto ${
+        isDarkMode ? 'text-white' : 'text-gray-900'
+      }`}>
         <div className="flex justify-between items-center p-6 border-b border-gray-800">
-          <h3 className="text-xl font-bold text-white">
+          <h3 className="text-xl font-bold">
             {orderConfirmed ? 'অর্ডার কনফার্ম হয়েছে!' : 'অর্ডার ফর্ম'}
           </h3>
           <button 
@@ -132,11 +138,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-white mb-1">আপনার নাম</label>
+                <label htmlFor="name" className="block mb-1">আপনার নাম</label>
                 <input
                   type="text"
                   id="name"
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholder="পূর্ণ নাম লিখুন"
                   {...register("name", { required: "নাম আবশ্যক" })}
                 />
@@ -144,11 +152,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
               
               <div>
-                <label htmlFor="phone" className="block text-white mb-1">ফোন নম্বর</label>
+                <label htmlFor="phone" className="block mb-1">ফোন নম্বর</label>
                 <input
                   type="tel"
                   id="phone"
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholder="০১৭XXXXXXXX"
                   {...register("phone", { 
                     required: "ফোন নম্বর আবশ্যক",
@@ -162,11 +172,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
               
               <div>
-                <label htmlFor="email" className="block text-white mb-1">ইমেইল (ঐচ্ছিক)</label>
+                <label htmlFor="email" className="block mb-1">ইমেইল (ঐচ্ছিক)</label>
                 <input
                   type="email"
                   id="email"
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholder="example@mail.com"
                   {...register("email", { 
                     pattern: {
@@ -179,10 +191,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
               
               <div>
-                <label htmlFor="package" className="block text-white mb-1">প্যাকেজ</label>
+                <label htmlFor="package" className="block mb-1">প্যাকেজ</label>
                 <select
                   id="package"
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   {...register("packageId", { required: "প্যাকেজ নির্বাচন করুন" })}
                 >
                   {packages.map(pkg => (
@@ -195,25 +209,29 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
               
               <div>
-                <label htmlFor="deliveryDate" className="block text-white mb-1">ডেলিভারির তারিখ (শুধু শুক্রবার)</label>
+                <label htmlFor="deliveryDate" className="block mb-1">ডেলিভারির তারিখ (শুধু শুক্রবার)</label>
                 <DatePicker
                   selected={deliveryDate}
                   onChange={(date: Date | null) => setDeliveryDate(date)}
                   filterDate={isFriday}
                   dateFormat="dd/MM/yyyy"
                   minDate={new Date()}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600 text-white"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholderText="শুক্রবারের তারিখ বাছাই করুন"
                 />
                 {!deliveryDate && <p className="text-red-500 text-sm mt-1">ডেলিভারির তারিখ আবশ্যক</p>}
               </div>
               
               <div>
-                <label htmlFor="address" className="block text-white mb-1">ডেলিভারি ঠিকানা</label>
+                <label htmlFor="address" className="block mb-1">ডেলিভারি ঠিকানা</label>
                 <textarea
                   id="address"
                   rows={3}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholder="আপনার সম্পূর্ণ ঠিকানা লিখুন"
                   {...register("address", { required: "ডেলিভারি ঠিকানা আবশ্যক" })}
                 />
@@ -221,11 +239,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
               
               <div>
-                <label htmlFor="additionalInfo" className="block text-white mb-1">অতিরিক্ত তথ্য (ঐচ্ছিক)</label>
+                <label htmlFor="additionalInfo" className="block mb-1">অতিরিক্ত তথ্য (ঐচ্ছিক)</label>
                 <textarea
                   id="additionalInfo"
                   rows={2}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600"
+                  className={`w-full px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-red-600 ${
+                    isDarkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                  }`}
                   placeholder="যেকোন অতিরিক্ত তথ্য বা নির্দেশনা"
                   {...register("additionalInfo")}
                 />

@@ -10,35 +10,33 @@ import Footer from './components/Footer';
 import { OrderProvider } from './context/OrderContext';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
-import { Toaster } from 'react-hot-toast'; // Toaster যোগ করা
-function Home() {
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <Header />
-      <main>
-        <Hero />
-        <SpecialSection />
-        <RaritySection />
-        <OrderSection />
-      </main>
-      <Footer />
-    </div>
-  );
-}
+import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './context/ThemeContext'; // Verify path
 
 function App() {
   return (
-    <OrderProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-        <Toaster position="top-right" /> {/* Toaster যোগ করা */}
-
-      </Router>
-    </OrderProvider>
+    <ThemeProvider>
+      <OrderProvider>
+        <Router>
+          <div className="min-h-screen">
+            <Header />
+            <main>
+              <Hero />
+              <SpecialSection />
+              <RaritySection />
+              <OrderSection />
+            </main>
+            <Footer />
+          </div>
+          <Routes>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            {/* Root path "/" will render the above components */}
+          </Routes>
+          <Toaster position="top-right" />
+        </Router>
+      </OrderProvider>
+    </ThemeProvider>
   );
 }
 
