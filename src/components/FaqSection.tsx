@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext'; // ThemeContext থেকে useTheme ইমপোর্ট
 
 const FaqSection: React.FC = () => {
+  const { isDarkMode } = useTheme(); // ThemeContext থেকে isDarkMode নেওয়া
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   
   const faqs = [
@@ -30,51 +32,68 @@ const FaqSection: React.FC = () => {
 
   return (
     <section id="faq" className="pt-10">
-      <motion.h3 
-        className="text-2xl md:text-3xl font-bold text-center mb-10 relative"
+      <motion.h3
+        className={`text-2xl md:text-3xl font-bold text-center mb-10 relative ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        <span className="text-white">সাধারণ</span>
-        <span className="text-[#FFD700]"> জিজ্ঞাসা</span>
+        <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>সাধারণ</span>
+        <span className={isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}> জিজ্ঞাসা</span>
         <span className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-red-600"></span>
       </motion.h3>
       
       <div className="max-w-3xl mx-auto mt-8">
         {faqs.map((faq, index) => (
-          <motion.div 
+          <motion.div
             key={index}
-            className="mb-4 border border-gray-800 rounded-lg overflow-hidden"
+            className={`mb-4 border rounded-lg overflow-hidden ${
+              isDarkMode ? 'border-gray-800' : 'border-gray-300'
+            }`}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
             <button
-              className="w-full p-4 bg-gray-900 text-white font-medium flex justify-between items-center focus:outline-none"
+              className={`w-full p-4 flex justify-between items-center focus:outline-none ${
+                isDarkMode
+                  ? 'bg-gray-900 text-white hover:bg-gray-800'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+              } font-medium transition-colors`}
               onClick={() => toggleFaq(index)}
             >
               <span className="text-left">{faq.question}</span>
-              {openIndex === index ? 
-                <ChevronUp className="text-red-600 flex-shrink-0" size={20} /> : 
+              {openIndex === index ? (
+                <ChevronUp className="text-red-600 flex-shrink-0" size={20} />
+              ) : (
                 <ChevronDown className="text-red-600 flex-shrink-0" size={20} />
-              }
+              )}
             </button>
             
-            <div 
+            <div
               className={`overflow-hidden transition-all duration-300 ${
                 openIndex === index ? 'max-h-96 p-4' : 'max-h-0'
+              } ${
+                isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700'
               }`}
             >
-              <p className="text-gray-300">{faq.answer}</p>
+              <p>{faq.answer}</p>
             </div>
           </motion.div>
         ))}
       </div>
       
-      <p className="text-gray-400 text-sm italic text-center mt-8">আরও প্রশ্ন/উত্তর যোগ হবে পরে</p>
+      <p
+        className={`text-sm italic text-center mt-8 ${
+          isDarkMode ? 'text-gray-400' : 'text-gray-600'
+        }`}
+      >
+        আরও প্রশ্ন/উত্তর যোগ হবে পরে
+      </p>
     </section>
   );
 };

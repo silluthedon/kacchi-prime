@@ -40,17 +40,20 @@ const SpecialSection: React.FC = () => {
   };
 
   return (
-    <section id="special" className={`py-20 relative ${isDarkMode ? 'bg-black' : 'bg-gray-200'}`}>
-      <div 
+    <section
+      id="special"
+      className={`py-20 relative ${isDarkMode ? 'bg-gray-900' : 'bg-gray-200'}`}
+    >
+      <div
         className="absolute inset-0 bg-fixed opacity-5"
         style={{
           backgroundImage: `url('https://images.pexels.com/photos/6210939/pexels-photo-6210939.jpeg?auto=compress&cs=tinysrgb&w=1600')`,
           filter: isDarkMode ? 'brightness(0.5)' : 'brightness(0.8)', // লাইট মোডে ব্যাকগ্রাউন্ড ছবি হালকা
         }}
       />
-      
+
       <div className="container mx-auto px-4 relative z-10">
-        <motion.h2 
+        <motion.h2
           className="text-3xl md:text-4xl font-bold text-center mb-16 relative"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -61,8 +64,8 @@ const SpecialSection: React.FC = () => {
           <span className={isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}> সিক্রেট কি?</span>
           <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-red-600"></span>
         </motion.h2>
-        
-        <motion.div 
+
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8"
           variants={sectionVariants}
           initial="hidden"
@@ -70,7 +73,7 @@ const SpecialSection: React.FC = () => {
           viewport={{ once: true }}
         >
           {features.map((feature, index) => (
-            <FeatureCard 
+            <FeatureCard
               key={index}
               image={feature.image}
               title={feature.title}
