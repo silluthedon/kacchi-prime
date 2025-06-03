@@ -8,9 +8,9 @@ const Hero: React.FC = () => {
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/80 to-black/95" // গাঢ় ওভারলে
+          className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/78 to-black/90" // গাঢ় ওভারলে
           style={{ 
-            backgroundImage: "url('https://img.freepik.com/free-photo/close-up-rice-with-carrots-garnished-with-lamb-pieces-served-with-pickles-yogurt_141793-2051.jpg?semt=ais_hybrid&w=740')",
+            backgroundImage: "url('https://img.freepik.com/premium-photo/mutton-kacchi-biryani-with-salad-borhani-chui-pitha-served-dish-isolated-mat-top-view-indian-bangladeshi-food_689047-4948.jpg')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
