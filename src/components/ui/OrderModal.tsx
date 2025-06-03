@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useOrderContext } from '../../context/OrderContext';
 import { supabase } from '../../utils/supabaseClient';
+
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,9 +24,9 @@ type FormValues = {
 const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) => {
   const { selectedPackage } = useOrderContext();
   const [deliveryDate, setDeliveryDate] = useState<Date | null>(getNextFriday());
-  const [paymentStep, setPaymentStep] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
-  const [formData, setFormData] = useState<FormValues | null>(null); // ফর্ম ডাটা স্টেটে সেভ করার জন্য
+  const [formData, setFormData] = useState<FormValues | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -47,48 +48,36 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
     return date.getDay() === 5;
   };
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    setFormData(data); // ফর্ম ডাটা স্টেটে সেভ করা
-    console.log({ ...data, deliveryDate });
-    setPaymentStep(true);
-  };
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    setError(null);
+    setFormData(data);
 
-const handlePayment = async () => {
-  if (!formData) return;
+    const deliveryDateStr = deliveryDate?.toISOString().split('T')[0] || '';
+    const selectedPkg = packages.find(pkg => pkg.id === data.packageId);
+    const { error: supabaseError } = await supabase.from('orders').insert({
+      customer_name: data.name,
+      item: selectedPkg?.title || 'Unknown Package', // প্যাকেজের টাইটেল ব্যবহার করা হচ্ছে
+      quantity: 1, // ডিফল্টভাবে ১ সেট করা হয়েছে (ফর্মে quantity ফিল্ড নেই)
+      phone: data.phone,
+      email: data.email || null,
+      address: data.address,
+      additional_info: data.additionalInfo || null,
+      delivery_date: deliveryDateStr,
+      order_status: 'pending',
+      delivery_status: 'pending',
+      payment_status: 'pending',
+    });
 
-  try {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert([
-        {
-          customer_name: formData.name,
-          item: formData.packageId,
-          quantity: 1,
-          phone: formData.phone,
-          email: formData.email,
-          address: formData.address,
-          additional_info: formData.additionalInfo,
-          delivery_date: deliveryDate?.toISOString(),
-        },
-      ]);
-
-    if (error) {
-      console.error('Supabase error:', error);
-      alert('Error saving order: ' + error.message);
-      setPaymentStep(false);
+    if (supabaseError) {
+      setError('অর্ডার সেভ করতে ব্যর্থ হয়েছে: ' + supabaseError.message);
       return;
     }
 
-    console.log('Order saved successfully:', data);
+    console.log({ ...data, deliveryDate });
     setTimeout(() => {
       setOrderConfirmed(true);
     }, 1500);
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    alert('Unexpected error: ' + (err as Error).message);
-    setPaymentStep(false);
-  }
-};
+  };
 
   const formatPrice = (packageId: string): string => {
     const pkg = packages.find(p => p.id === packageId);
@@ -105,7 +94,7 @@ const handlePayment = async () => {
       <div className="bg-black border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b border-gray-800">
           <h3 className="text-xl font-bold text-white">
-            {orderConfirmed ? 'অর্ডার কনফার্ম হয়েছে!' : paymentStep ? 'পেমেন্ট' : 'অর্ডার ফর্ম'}
+            {orderConfirmed ? 'অর্ডার কনফার্ম হয়েছে!' : 'অর্ডার ফর্ম'}
           </h3>
           <button 
             onClick={onClose}
@@ -116,6 +105,7 @@ const handlePayment = async () => {
         </div>
 
         <div className="p-6">
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           {orderConfirmed ? (
             <div className="text-center py-8">
               <div className="w-20 h-20 rounded-full bg-green-600 mx-auto flex items-center justify-center mb-6">
@@ -123,7 +113,7 @@ const handlePayment = async () => {
                   xmlns="http://www.w3.org/2000/svg" 
                   className="h-10 w-10 text-white" 
                   fill="none" 
-                  viewBox="0 0 24 24" // অতিরিক্ত \ রিমুভ করা হয়েছে
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -138,47 +128,6 @@ const handlePayment = async () => {
               >
                 ধন্যবাদ
               </button>
-            </div>
-          ) : paymentStep ? (
-            <div className="py-4">
-              <div className="bg-gray-900 rounded-lg p-6 mb-6">
-                <h4 className="text-white font-bold mb-2">বুকিং টাকা (৫০%)</h4>
-                <p className="text-2xl text-[#FFD700] font-bold">{formatPrice(selectedPackage)} টাকা</p>
-                <p className="text-gray-400 text-sm mt-1">* বাকি টাকা ডেলিভারির সময় পরিশোধ করতে হবে</p>
-              </div>
-              
-              <div className="bg-gray-900 rounded-lg p-6 mb-6">
-                <h4 className="text-white font-bold mb-4">পেমেন্ট মেথড</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <input type="radio" id="bkash" name="payment" className="mr-3" defaultChecked />
-                    <label htmlFor="bkash" className="text-white">বিকাশ</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input type="radio" id="nagad" name="payment" className="mr-3" />
-                    <label htmlFor="nagad" className="text-white">নগদ</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input type="radio" id="card" name="payment" className="mr-3" />
-                    <label htmlFor="card" className="text-white">ক্রেডিট/ডেবিট কার্ড</label>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row md:space-x-4 mt-8">
-                <button 
-                  onClick={() => setPaymentStep(false)}
-                  className="py-3 px-6 border border-gray-600 rounded-md text-white font-medium hover:bg-gray-800 transition md:w-1/2"
-                >
-                  পেছনে যান
-                </button>
-                <button 
-                  onClick={handlePayment}
-                  className="py-3 px-6 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition mt-4 md:mt-0 md:w-1/2"
-                >
-                  পেমেন্ট করুন
-                </button>
-              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -249,7 +198,7 @@ const handlePayment = async () => {
                 <label htmlFor="deliveryDate" className="block text-white mb-1">ডেলিভারির তারিখ (শুধু শুক্রবার)</label>
                 <DatePicker
                   selected={deliveryDate}
-                  onChange={(date) => setDeliveryDate(date)}
+                  onChange={(date: Date | null) => setDeliveryDate(date)}
                   filterDate={isFriday}
                   dateFormat="dd/MM/yyyy"
                   minDate={new Date()}

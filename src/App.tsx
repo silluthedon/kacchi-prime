@@ -9,8 +9,8 @@ import OrderSection from './components/OrderSection';
 import Footer from './components/Footer';
 import { OrderProvider } from './context/OrderContext';
 import AdminPage from './pages/AdminPage';
-import LoginPage from './pages/LoginPage'; // নতুন লগইন পেজ ইমপোর্ট
-
+import LoginPage from './pages/LoginPage';
+import { Toaster } from 'react-hot-toast'; // Toaster যোগ করা
 function Home() {
   return (
     <div className="min-h-screen bg-black text-white">
@@ -36,6 +36,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
+        <Toaster position="top-right" /> {/* Toaster যোগ করা */}
       </Router>
     </OrderProvider>
   );

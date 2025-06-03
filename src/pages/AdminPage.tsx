@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
+import toast from 'react-hot-toast'; // react-hot-toast আমদানি করা
 
 const AdminPage = () => {
   const [orders, setOrders] = useState([]);
@@ -48,6 +49,7 @@ const AdminPage = () => {
 
         if (error) {
           console.error('Error fetching orders:', error);
+          toast.error('অর্ডার লোড করতে ব্যর্থ হয়েছে!'); // টোস্ট মেসেজ যোগ করা
           setOrders([]);
           setFilteredOrders([]);
         } else {
@@ -56,6 +58,7 @@ const AdminPage = () => {
         }
       } catch (error) {
         console.error('Error:', error);
+        toast.error('একটি অজানা ত্রুটি ঘটেছে!'); // টোস্ট মেসেজ যোগ করা
         setOrders([]);
         setFilteredOrders([]);
       } finally {
@@ -73,7 +76,7 @@ const AdminPage = () => {
     // সার্চ
     if (searchQuery) {
       updatedOrders = updatedOrders.filter(order =>
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.id.toString().toLowerCase().includes(searchQuery.toLowerCase()) || // id স্ট্রিং হিসেবে তুলনা করা
         order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.phone?.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -121,7 +124,7 @@ const AdminPage = () => {
 
       if (error) {
         console.error(`Error updating ${field}:`, error);
-        alert(`${field} আপডেটে ত্রুটি: ` + error.message);
+        toast.error(`${field} আপডেটে ত্রুটি: ${error.message}`); // টোস্ট মেসেজ
         return;
       }
 
@@ -130,16 +133,24 @@ const AdminPage = () => {
           order.id === orderId ? { ...order, [field]: newStatus } : order
         )
       );
-      alert(`${field} সফলভাবে আপডেট করা হয়েছে!`);
+      toast.success(`${field} সফলভাবে আপডেট করা হয়েছে!`, {
+        duration: 3000,
+        icon: '🎉',
+      }); // টোস্ট মেসেজ
     } catch (err) {
       console.error('Unexpected error:', err);
-      alert('অজানা ত্রুটি: ' + err.message);
+      toast.error('অজানা ত্রুটি: ' + err.message); // টোস্ট মেসেজ
     }
   };
 
   // ডেলিভারি ডেট আপডেট ফাংশন
   const handleDeliveryDateChange = async (orderId, newDeliveryDate) => {
     try {
+      if (!newDeliveryDate) {
+        toast.error('ডেলিভারি তারিখ নির্বাচন করুন!'); // টোস্ট মেসেজ
+        return;
+      }
+
       const { error } = await supabase
         .from('orders')
         .update({ delivery_date: newDeliveryDate })
@@ -147,7 +158,7 @@ const AdminPage = () => {
 
       if (error) {
         console.error('Error updating delivery date:', error);
-        alert('ডেলিভারি ডেট আপডেটে ত্রুটি: ' + error.message);
+        toast.error('ডেলিভারি ডেট আপডেটে ত্রুটি: ' + error.message); // টোস্ট মেসেজ
         return;
       }
 
@@ -156,10 +167,13 @@ const AdminPage = () => {
           order.id === orderId ? { ...order, delivery_date: newDeliveryDate } : order
         )
       );
-      alert('ডেলিভারি ডেট সফলভাবে আপডেট করা হয়েছে!');
+      toast.success('ডেলিভারি ডেট সফলভাবে আপডেট করা হয়েছে!', {
+        duration: 3000,
+        icon: '🎉',
+      }); // টোস্ট মেসেজ
     } catch (err) {
       console.error('Unexpected error:', err);
-      alert('অজানা ত্রুটি: ' + err.message);
+      toast.error('অজানা ত্রুটি: ' + err.message); // টোস্ট মেসেজ
     }
   };
 
