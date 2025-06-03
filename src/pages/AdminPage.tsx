@@ -1,45 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
-import toast from 'react-hot-toast'; // react-hot-toast আমদানি করা
+import toast from 'react-hot-toast';
 
 const AdminPage = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState('All');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [searchQuery, setSearchQuery] = useState('');
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      console.log('Checking user authentication...');
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error('Error fetching user:', error);
+          setError('ইউজার ডেটা লোড করতে ব্যর্থ: ' + error.message);
+          toast.error('ইউজার ডেটা লোড করতে ব্যর্থ: ' + error.message);
+          navigate('/login');
+          return;
+        }
+        if (!user) {
+          console.warn('No user is logged in');
+          setError('কোনো ইউজার লগইন করেনি।');
+          toast.error('দয়া করে লগইন করুন।');
+          navigate('/login');
+          return;
+        }
+
+        console.log('User fetched:', user.id);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          setError('প্রোফাইল ডেটা লোড করতে ব্যর্থ: ' + profileError.message);
+          toast.error('প্রোফাইল ডেটা লোড করতে ব্যর্থ: ' + profileError.message);
+          navigate('/login');
+          return;
+        }
+
+        console.log('Profile data:', profile);
+        if (profile.role !== 'admin') {
+          console.warn('User is not an admin:', profile.role);
+          setError('আপনার এডমিন প্যানেলে প্রবেশের অনুমতি নেই।');
+          toast.error('আপনার এডমিন প্যানেলে প্রবেশের অনুমতি নেই।');
+          navigate('/login');
+          return;
+        }
+
+        setUser(user);
+        fetchOrders(); // এখানে কল করা হচ্ছে
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        setError('অজানা ত্রুটি: ' + err.message);
+        toast.error('অজানা ত্রুটি: ' + err.message);
         navigate('/login');
-        return;
       }
-
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (error || profile.role !== 'admin') {
-        navigate('/login');
-        return;
-      }
-
-      setUser(user);
-      fetchOrders();
     };
 
     const fetchOrders = async () => {
+      console.log('Fetching orders...');
       try {
         setLoading(true);
         const { data, error } = await supabase
@@ -49,16 +81,17 @@ const AdminPage = () => {
 
         if (error) {
           console.error('Error fetching orders:', error);
-          toast.error('অর্ডার লোড করতে ব্যর্থ হয়েছে!'); // টোস্ট মেসেজ যোগ করা
+          toast.error('অর্ডার লোড করতে ব্যর্থ: ' + error.message);
           setOrders([]);
           setFilteredOrders([]);
         } else {
+          console.log('Orders fetched:', data);
           setOrders(data);
           setFilteredOrders(data);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        toast.error('একটি অজানা ত্রুটি ঘটেছে!'); // টোস্ট মেসেজ যোগ করা
+      } catch (err) {
+        console.error('Error:', err);
+        toast.error('অজানা ত্রুটি: ' + err.message);
         setOrders([]);
         setFilteredOrders([]);
       } finally {
@@ -66,23 +99,36 @@ const AdminPage = () => {
       }
     };
 
+    // Auth state change listener যোগ করা
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      if (event === 'SIGNED_IN') {
+        setUser(session?.user ?? null);
+        if (session?.user) fetchOrders();
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        navigate('/login');
+      }
+    });
+
     checkUser();
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate]);
 
-  // ফিল্টার, সার্চ, এবং সর্টিং ফাংশন
   useEffect(() => {
     let updatedOrders = [...orders];
 
-    // সার্চ
     if (searchQuery) {
       updatedOrders = updatedOrders.filter(order =>
-        order.id.toString().toLowerCase().includes(searchQuery.toLowerCase()) || // id স্ট্রিং হিসেবে তুলনা করা
+        order.id.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.phone?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // ফিল্টারিং
     if (orderStatusFilter !== 'All') {
       updatedOrders = updatedOrders.filter(order => order.order_status === orderStatusFilter);
     }
@@ -93,7 +139,6 @@ const AdminPage = () => {
       updatedOrders = updatedOrders.filter(order => order.payment_status === paymentStatusFilter);
     }
 
-    // সর্টিং
     if (sortBy === 'created_at_desc') {
       updatedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else if (sortBy === 'created_at_asc') {
@@ -116,6 +161,7 @@ const AdminPage = () => {
   }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, sortBy, searchQuery]);
 
   const handleStatusChange = async (orderId, field, newStatus) => {
+    console.log(`Updating ${field} for order ${orderId} to ${newStatus}`);
     try {
       const { error } = await supabase
         .from('orders')
@@ -124,7 +170,7 @@ const AdminPage = () => {
 
       if (error) {
         console.error(`Error updating ${field}:`, error);
-        toast.error(`${field} আপডেটে ত্রুটি: ${error.message}`); // টোস্ট মেসেজ
+        toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)} আপডেটে ত্রুটি: ${error.message}`);
         return;
       }
 
@@ -133,21 +179,21 @@ const AdminPage = () => {
           order.id === orderId ? { ...order, [field]: newStatus } : order
         )
       );
-      toast.success(`${field} সফলভাবে আপডেট করা হয়েছে!`, {
+      toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} সফলভাবে আপডেট করা হয়েছে!`, {
         duration: 3000,
         icon: '🎉',
-      }); // টোস্ট মেসেজ
+      });
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast.error('অজানা ত্রুটি: ' + err.message); // টোস্ট মেসেজ
+      toast.error('অজানা ত্রুটি: ' + err.message);
     }
   };
 
-  // ডেলিভারি ডেট আপডেট ফাংশন
   const handleDeliveryDateChange = async (orderId, newDeliveryDate) => {
+    console.log(`Updating delivery date for order ${orderId} to ${newDeliveryDate}`);
     try {
       if (!newDeliveryDate) {
-        toast.error('ডেলিভারি তারিখ নির্বাচন করুন!'); // টোস্ট মেসেজ
+        toast.error('ডেলিভারি তারিখ নির্বাচন করুন!');
         return;
       }
 
@@ -158,7 +204,7 @@ const AdminPage = () => {
 
       if (error) {
         console.error('Error updating delivery date:', error);
-        toast.error('ডেলিভারি ডেট আপডেটে ত্রুটি: ' + error.message); // টোস্ট মেসেজ
+        toast.error('ডেলিভারি ডেট আপডেটে ত্রুটি: ' + error.message);
         return;
       }
 
@@ -170,10 +216,10 @@ const AdminPage = () => {
       toast.success('ডেলিভারি ডেট সফলভাবে আপডেট করা হয়েছে!', {
         duration: 3000,
         icon: '🎉',
-      }); // টোস্ট মেসেজ
+      });
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast.error('অজানা ত্রুটি: ' + err.message); // টোস্ট মেসেজ
+      toast.error('অজানা ত্রুটি: ' + err.message);
     }
   };
 
@@ -200,7 +246,32 @@ const AdminPage = () => {
     }
   };
 
-  if (!user) return null;
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">ত্রুটি</h1>
+          <p className="text-lg mb-4">{error}</p>
+          <a
+            href="/login"
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            লগইন পেজে ফিরুন
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
+        <div className="text-center">
+          <p className="text-lg">লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -208,8 +279,14 @@ const AdminPage = () => {
         <h1 className="text-3xl font-bold">অ্যাডমিন পেজ: সব অর্ডার</h1>
         <button
           onClick={async () => {
-            await supabase.auth.signOut();
-            navigate('/login');
+            try {
+              await supabase.auth.signOut();
+              navigate('/login');
+              toast.success('সফলভাবে লগআউট করা হয়েছে!');
+            } catch (err) {
+              console.error('Logout error:', err);
+              toast.error('লগআউট ব্যর্থ: ' + err.message);
+            }
           }}
           className="py-2 px-4 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition"
         >
@@ -217,7 +294,6 @@ const AdminPage = () => {
         </button>
       </div>
 
-      {/* সার্চ বার */}
       <div className="mb-6">
         <input
           type="text"
@@ -228,7 +304,6 @@ const AdminPage = () => {
         />
       </div>
 
-      {/* ফিল্টার এবং সর্টিং UI */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div>
           <label className="block text-sm mb-1">অর্ডার স্ট্যাটাস ফিল্টার</label>
@@ -332,7 +407,7 @@ const AdminPage = () => {
                         value={order.delivery_date ? order.delivery_date.split('T')[0] : ''}
                         onChange={(e) => handleDeliveryDateChange(order.id, e.target.value)}
                         className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
-                        min={new Date().toISOString().split('T')[0]} // আজকের তারিখের আগে ডেট নির্বাচন করা যাবে না
+                        min={new Date().toISOString().split('T')[0]}
                       />
                     </div>
                   </td>
@@ -344,10 +419,10 @@ const AdminPage = () => {
                   <td className="border border-gray-700 p-3">
                     <div className="relative inline-block">
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.order_status, 'order_status')}`}>
-                        {order.order_status}
+                        {order.order_status || 'N/A'}
                       </span>
                       <select
-                        value={order.order_status}
+                        value={order.order_status || ''}
                         onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       >
@@ -361,10 +436,10 @@ const AdminPage = () => {
                   <td className="border border-gray-700 p-3">
                     <div className="relative inline-block">
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
-                        {order.delivery_status}
+                        {order.delivery_status || 'N/A'}
                       </span>
                       <select
-                        value={order.delivery_status}
+                        value={order.delivery_status || ''}
                         onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       >
@@ -377,10 +452,10 @@ const AdminPage = () => {
                   <td className="border border-gray-700 p-3">
                     <div className="relative inline-block">
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.payment_status, 'payment_status')}`}>
-                        {order.payment_status}
+                        {order.payment_status || 'N/A'}
                       </span>
                       <select
-                        value={order.payment_status}
+                        value={order.payment_status || ''}
                         onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       >

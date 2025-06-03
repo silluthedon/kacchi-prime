@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react'; // Add React and useState
+import React, { useState, useEffect } from 'react';
 import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Menu, X, Moon, Sun } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 import Logo from '../assets/kacchi-prime-logo.png';
-import { useTheme } from '../context/ThemeContext'; // ThemeContext থেকে useTheme ইমপোর্ট
+import { useTheme } from '../context/ThemeContext';
 
 const Header = () => {
-  const { isDarkMode, toggleTheme } = useTheme(); // গ্লোবাল থিম স্টেট
+  const { isDarkMode, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
@@ -33,10 +33,30 @@ const Header = () => {
       }
     };
 
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) console.error('Role fetch error:', error);
+            else setRole(data?.role);
+          });
+      } else {
+        setRole(null);
+      }
+    });
+
     window.addEventListener('scroll', handleScroll);
     checkUser();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {

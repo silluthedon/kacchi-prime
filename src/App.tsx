@@ -11,29 +11,34 @@ import { OrderProvider } from './context/OrderContext';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from './context/ThemeContext'; // Verify path
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
     <ThemeProvider>
       <OrderProvider>
         <Router>
-          <div className="min-h-screen">
+          <div className="min-h-screen flex flex-col">
             <Header />
-            <main>
-              <Hero />
-              <SpecialSection />
-              <RaritySection />
-              <OrderSection />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={
+                  <>
+                    <Hero />
+                    <SpecialSection />
+                    <RaritySection />
+                    <HowToGetSection />
+                    <OrderSection />
+                  </>
+                } />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="*" element={<div className="text-center py-10 text-white">৪০৪: পেজ পাওয়া যায়নি</div>} />
+              </Routes>
             </main>
             <Footer />
+            <Toaster position="top-right" />
           </div>
-          <Routes>
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            {/* Root path "/" will render the above components */}
-          </Routes>
-          <Toaster position="top-right" />
         </Router>
       </OrderProvider>
     </ThemeProvider>
