@@ -8,9 +8,9 @@ const Hero: React.FC = () => {
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/90" 
+          className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/80 to-black/95" // গাঢ় ওভারলে
           style={{ 
-            backgroundImage: "url('https://img.freepik.com/free-photo/close-up-rice-with-carrots-garnished-with-lamb-pieces-served-with-pickles-yogurt_141793-2051.jpg?semt=ais_hybrid&w=740')", // নতুন কাচ্চি বিরিয়ানি ছবি
+            backgroundImage: "url('https://img.freepik.com/free-photo/close-up-rice-with-carrots-garnished-with-lamb-pieces-served-with-pickles-yogurt_141793-2051.jpg?semt=ais_hybrid&w=740')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -21,25 +21,25 @@ const Hero: React.FC = () => {
       
       <div className="container mx-auto px-4 z-10">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight drop-shadow-lg">
             <span className="text-white">বিয়ের দাওয়াত ছাড়াই উপভোগ করুন</span>
           </h1>
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-[#FFD700]">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-[#FFD700] drop-shadow-lg">
             বিয়ে বাড়ির কাচ্চির প্রিমিয়াম স্বাদ
           </h2>
           
           <div className="flex flex-col space-y-4 mb-12 max-w-2xl mx-auto">
             <div className="flex items-center">
               <CheckCircle2 size={24} className="text-red-600 mr-3 flex-shrink-0" />
-              <p className="text-lg text-left">বাছাই করা খাসির তুলতুলে প্রচুর মাংস</p>
+              <p className="text-lg text-left text-white drop-shadow-md">বাছাই করা খাসির তুলতুলে প্রচুর মাংস</p>
             </div>
             <div className="flex items-center">
               <CheckCircle2 size={24} className="text-red-600 mr-3 flex-shrink-0" />
-              <p className="text-lg text-left">ধবধবে সাদা প্রিমিয়াম চিনিগুড়া চাল</p>
+              <p className="text-lg text-left text-white drop-shadow-md">ধবধবে সাদা প্রিমিয়াম চিনিগুড়া চাল</p>
             </div>
             <div className="flex items-center">
               <CheckCircle2 size={24} className="text-red-600 mr-3 flex-shrink-0" />
-              <p className="text-lg text-left">অল্প তেল, প্রিমিয়াম মসলা ও উপাদানে রান্না</p>
+              <p className="text-lg text-left text-white drop-shadow-md">অল্প তেল, প্রিমিয়াম মসলা ও উপাদানে রান্না</p>
             </div>
           </div>
           
