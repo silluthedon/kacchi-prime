@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
               বিয়ে বাড়ির কাচ্চির প্রিমিয়াম স্বাদ এখন আপনার ডোরস্টেপে
             </p>
             <p className="text-gray-400 text-sm mt-4">
-              &copy; {new Date().getFullYear()} Kacchi Prime. সর্বস্বত্ব সংরক্ষিত।
+              &copy; {new Date().getFullYear()} Kacchi Prime. All rights reserved.|$|
             </p>
           </div>
           
