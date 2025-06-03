@@ -8,15 +8,16 @@ const Hero: React.FC = () => {
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/78 to-black/90" // গাঢ় ওভারলে
-          style={{ 
-            backgroundImage: "url('https://img.freepik.com/premium-photo/mutton-kacchi-biryani-with-salad-borhani-chui-pitha-served-dish-isolated-mat-top-view-indian-bangladeshi-food_689047-4948.jpg')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundBlendMode: 'overlay',
-          }} 
-        />
+  className="absolute inset-0 bg-gradient-to-b from-black/88 via-black/70 to-black/82"
+  style={{ 
+    backgroundImage: "url('https://img.freepik.com/premium-photo/mutton-biryani-with-fresh-coriander-leaves_1169880-91747.jpg?semt=ais_hybrid&w=740')",
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundBlendMode: 'overlay',
+    filter: 'brightness(0.6)', /* ০.৬ মানে ৬০% উজ্জ্বলতা, কমিয়ে বা বাড়িয়ে নিয়ন্ত্রণ করতে পারেন */
+  }} 
+/>
       </div>
       
       <div className="container mx-auto px-4 z-10">
