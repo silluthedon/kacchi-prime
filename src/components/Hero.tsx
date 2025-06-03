@@ -8,7 +8,7 @@ const Hero: React.FC = () => {
 
   return (
     <section
-      className={`relative min-h-screen flex items-center justify-center pt-20 md:pt-24 ${
+      className={`relative min-h-screen flex items-center justify-center pt-14 md:pt-16 ${
         isDarkMode ? 'bg-gray-900' : 'bg-gray-100'
       }`} // গ্যাপের জন্য pt-20 (80px) এবং md:pt-24 (96px)
     >

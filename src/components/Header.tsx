@@ -55,7 +55,7 @@ const Header = () => {
           : isDarkMode ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md'
       } ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
     >
-      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+      <div className="container mx-auto px-4 py-1 flex justify-between items-center">
         <div className="logo flex items-center">
           <RouterLink to="/">
             <img
@@ -66,7 +66,7 @@ const Header = () => {
           </RouterLink>
         </div>
         
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex space-x-6">
           {!user ? (
             <RouterLink to="/login" className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
               লগ ইন
