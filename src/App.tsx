@@ -19,7 +19,6 @@ function Home() {
         <Hero />
         <SpecialSection />
         <RaritySection />
-        <HowToGetSection />
         <OrderSection />
       </main>
       <Footer />
@@ -37,6 +36,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
         </Routes>
         <Toaster position="top-right" /> {/* Toaster যোগ করা */}
+
       </Router>
     </OrderProvider>
   );
