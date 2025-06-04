@@ -86,13 +86,13 @@ const Header = () => {
           : isDarkMode ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md'
       } ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
     >
-      <div className="container mx-auto px-4 py-1 flex justify-between items-center flex-wrap md:flex-nowrap">
+      <div className="container mx-auto px-4 py-0 flex justify-between items-center flex-wrap md:flex-nowrap">
         <div className="logo flex items-center">
           <RouterLink to="/">
             <img
               src={Logo}
               alt="Kacchi Prime Logo"
-              className="h-12 w-auto mr-2 object-contain"
+              className="h-16 w-auto mr-2 object-contain"
             />
           </RouterLink>
         </div>
@@ -135,20 +135,20 @@ const Header = () => {
         </div>
 
         {/* Right Side Buttons */}
-<div className="flex items-center space-x-2 ml-auto mt-2 md:mt-0 shrink-0">
-  <button 
-    className="md:hidden focus:outline-none"
-    onClick={() => setIsOpen(!isOpen)}
-  >
-    {isOpen ? <X size={20} /> : <Menu size={20} />}
-  </button>
-  <button 
-    onClick={toggleTheme}
-    className={`p-6 rounded-full transition ${isDarkMode ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-  >
-    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-  </button>
-</div>
+        <div className="flex items-center space-x-2 ml-auto mt-2 md:mt-0 shrink-0">
+          <button 
+            className="md:hidden focus:outline-none"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          <button 
+            onClick={toggleTheme}
+            className={`p-9 rounded-full transition ${isDarkMode ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -211,18 +211,6 @@ const Header = () => {
                 </ScrollLink>
               </motion.div>
             ))}
-
-            <motion.div variants={menuItemVariants}>
-              <ScrollLink 
-                to="order" 
-                smooth 
-                duration={500} 
-                className={`w-full py-3 text-center font-bold text-lg ${isDarkMode ? 'bg-red-600 text-white' : 'bg-red-600 text-gray-900'}`}
-                onClick={() => setIsOpen(false)}
-              >
-                অর্ডার করুন
-              </ScrollLink>
-            </motion.div>
           </div>
         </motion.div>
       )}
