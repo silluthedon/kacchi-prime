@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PackageCard from './ui/PackageCard';
 import OrderModal from './ui/OrderModal';
-import FaqSection from './FaqSection';
+import FaqSection from './FaqSection'; // সংশোধিত ইম্পোর্ট পথ
 import { useOrderContext } from '../context/OrderContext';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../utils/supabaseClient';
@@ -17,12 +17,11 @@ const OrderSection: React.FC = () => {
     const fetchPackages = async () => {
       const { data, error } = await supabase
         .from('packages')
-        .select('id, name, price');
+        .select('id, name, price, delivery_fee');
       
       if (error) {
         console.error('Error fetching packages:', error);
       } else {
-        // হার্ডকোডেড ডাটা থেকে pricePerPerson এবং features যোগ করা
         const enrichedPackages = data.map(pkg => ({
           ...pkg,
           pricePerPerson: pkg.price / (pkg.name.includes('৪') ? 4 : pkg.name.includes('২০') ? 20 : 50),
@@ -46,6 +45,22 @@ const OrderSection: React.FC = () => {
     };
 
     fetchPackages();
+
+    // Realtime subscription
+    const subscription = supabase
+      .channel('public:packages')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'packages' }, (payload) => {
+        setPackages(prevPackages =>
+          prevPackages.map(pkg =>
+            pkg.id === payload.new.id ? { ...pkg, price: payload.new.price, delivery_fee: payload.new.delivery_fee } : pkg
+          )
+        );
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const handleOrderClick = (packageId: string) => {
@@ -86,6 +101,7 @@ const OrderSection: React.FC = () => {
                 key={pkg.id}
                 title={pkg.name}
                 price={pkg.price}
+                deliveryFee={pkg.delivery_fee || 0}
                 pricePerPerson={pkg.pricePerPerson}
                 image={pkg.image}
                 features={pkg.features}

@@ -15,7 +15,6 @@ const AdminPage = () => {
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [searchQuery, setSearchQuery] = useState('');
   const [packages, setPackages] = useState([]);
-  const [newPrices, setNewPrices] = useState({}); // প্রতি প্যাকেজের জন্য আলাদা দাম
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -238,34 +237,6 @@ const AdminPage = () => {
     }
   };
 
-  const handlePriceUpdate = async (packageId) => {
-    const priceToUpdate = newPrices[packageId] || '';
-    if (!priceToUpdate) {
-      toast.error('দয়া করে নতুন দাম লিখুন!');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('packages')
-      .update({ price: parseFloat(priceToUpdate) })
-      .eq('id', packageId);
-
-    if (error) {
-      console.error('Error updating price:', error);
-      toast.error('দাম আপডেটে ত্রুটি: ' + error.message);
-    } else {
-      toast.success('দাম সফলভাবে আপডেট করা হয়েছে!');
-      const { data } = await supabase
-        .from('packages')
-        .select('*')
-        .eq('id', packageId);
-      setPackages(packages.map(pkg => 
-        pkg.id === packageId ? data[0] : pkg
-      ));
-      setNewPrices(prev => ({ ...prev, [packageId]: '' })); // সেই প্যাকেজের ইনপুট ক্লিয়ার করা
-    }
-  };
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
@@ -297,21 +268,29 @@ const AdminPage = () => {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">এডমিন পেজ: সব অর্ডার</h1>
-        <button
-          onClick={async () => {
-            try {
-              await supabase.auth.signOut();
-              navigate('/login');
-              toast.success('সফলভাবে লগআউট করা হয়েছে!');
-            } catch (err) {
-              console.error('Logout error:', err);
-              toast.error('লগআউট ব্যর্থ: ' + err.message);
-            }
-          }}
-          className="py-2 px-4 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition"
-        >
-          লগআউট
-        </button>
+        <div>
+          <button
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+                navigate('/login');
+                toast.success('সফলভাবে লগআউট করা হয়েছে!');
+              } catch (err) {
+                console.error('Logout error:', err);
+                toast.error('লগআউট ব্যর্থ: ' + err.message);
+              }
+            }}
+            className="py-2 px-4 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition mr-4"
+          >
+            লগআউট
+          </button>
+          <button
+            onClick={() => navigate('/admin/price-update')}
+            className="py-2 px-4 bg-blue-600 rounded-md text-white font-bold hover:bg-blue-700 transition"
+          >
+            দাম ও ডেলিভারি চার্জ আপডেট
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -491,36 +470,6 @@ const AdminPage = () => {
           </table>
         </div>
       )}
-
-      {/* Package Price Update Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-4">প্যাকেজ দাম আপডেট</h2>
-        {packages.map((pkg) => (
-          <div key={pkg.id} className="mb-4 p-4 border border-gray-700 rounded">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">{pkg.name}</h3>
-                <p>বর্তমান দাম: {pkg.price} টাকা</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  value={newPrices[pkg.id] || ''}
-                  onChange={(e) => setNewPrices(prev => ({ ...prev, [pkg.id]: e.target.value }))}
-                  placeholder="নতুন দাম লিখুন"
-                  className="p-2 bg-gray-800 border border-gray-700 rounded text-white"
-                />
-                <button
-                  onClick={() => handlePriceUpdate(pkg.id)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  আপডেট
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

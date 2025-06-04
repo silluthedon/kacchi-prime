@@ -12,6 +12,7 @@ interface PackageCardProps {
   index: number;
   onOrderClick: () => void;
   isDarkMode: boolean;
+  deliveryFee: number;
 }
 
 const PackageCard: React.FC<PackageCardProps> = ({
@@ -24,8 +25,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
   index,
   onOrderClick,
   isDarkMode,
+  deliveryFee,
 }) => {
-  console.log(`PackageCard ${title}: isDarkMode = ${isDarkMode}`); // ডিবাগিং লগ
+  console.log(`PackageCard ${title}: isDarkMode = ${isDarkMode}`);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -68,6 +70,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
         <div className="mt-2 mb-4">
           <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString()} টাকা</p>
           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson} টাকা করে একজন)</p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>ডেলিভারি চার্জ: {deliveryFee.toLocaleString()} টাকা</p>
         </div>
         
         <div className="space-y-2 mt-4 mb-6">

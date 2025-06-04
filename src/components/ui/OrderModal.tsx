@@ -54,9 +54,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
 
     const deliveryDateStr = deliveryDate?.toISOString().split('T')[0] || '';
     const selectedPkg = packages.find(pkg => pkg.id === data.packageId);
+    if (!selectedPkg) {
+      setError('অবৈধ প্যাকেজ নির্বাচন করা হয়েছে।');
+      return;
+    }
+
     const { error: supabaseError } = await supabase.from('orders').insert({
       customer_name: data.name,
-      item: selectedPkg?.title || 'Unknown Package',
+      item: selectedPkg.name,
       quantity: 1,
       phone: data.phone,
       email: data.email || null,
@@ -154,7 +159,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
                 অর্ডার কনফার্মড!
               </motion.h4>
               <motion.p
-                className="text-gray-300 mb-6"
+                className="text-gray-300 mb-4"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -162,10 +167,26 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
                 আমরা আপনার সাথে শীঘ্রই যোগাযোগ করব।
               </motion.p>
               <motion.p
-                className="text-white"
+                className="text-white mb-4"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
+              >
+                প্যাকেজ: {packages.find(pkg => pkg.id === formData?.packageId)?.name || 'N/A'}
+              </motion.p>
+              <motion.p
+                className="text-white mb-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                মোট মূল্য: {packages.find(pkg => pkg.id === formData?.packageId)?.price.toLocaleString()} টাকা
+              </motion.p>
+              <motion.p
+                className="text-white"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7 }}
               >
                 ডেলিভারি তারিখ:{' '}
                 {deliveryDate?.toLocaleDateString('bn-BD', {
@@ -303,7 +324,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
                   >
                     {packages.map((pkg) => (
                       <option key={pkg.id} value={pkg.id}>
-                        {pkg.title} - {pkg.price.toLocaleString()} টাকা
+                        {pkg.name} - {pkg.price.toLocaleString()} টাকা
                       </option>
                     ))}
                   </select>
