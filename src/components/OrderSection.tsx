@@ -1,61 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PackageCard from './ui/PackageCard';
 import OrderModal from './ui/OrderModal';
 import FaqSection from './FaqSection';
 import { useOrderContext } from '../context/OrderContext';
-import { useTheme } from '../context/ThemeContext'; // ThemeContext থেকে useTheme ইমপোর্ট
+import { useTheme } from '../context/ThemeContext';
+import { supabase } from '../utils/supabaseClient';
 
 const OrderSection: React.FC = () => {
   const { selectedPackage, setSelectedPackage } = useOrderContext();
-  const { isDarkMode } = useTheme(); // ThemeContext থেকে isDarkMode নেওয়া
+  const { isDarkMode } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const packages = [
-    {
-      id: "4person",
-      title: "৪ জনের প্যাকেজ",
-      price: 3200,
-      pricePerPerson: 800,
-      image: "https://images.pexels.com/photos/7426867/pexels-photo-7426867.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      features: [
-        "প্রিমিয়াম খাসির মাংস",
-        "উন্নতমানের চিনিগুড়া চাল",
-        "কাস্টম প্যাকেজিং",
-        "ফ্রি হোম ডেলিভারি"
-      ]
-    },
-    {
-      id: "20person",
-      title: "২০ জনের প্যাকেজ",
-      price: 15500,
-      pricePerPerson: 775,
-      image: "https://img.freepik.com/premium-photo/fall-bone-meat-mutton-kacchi-biryani-realistic-photo_27550-6772.jpg",
-      features: [
-        "প্রিমিয়াম খাসির মাংস",
-        "উন্নতমানের চিনিগুড়া চাল",
-        "কাস্টম প্যাকেজিং",
-        "ফ্রি হোম ডেলিভারি",
-        "বোনাস সালাদ"
-      ],
-      popular: true
-    },
-    {
-      id: "50person",
-      title: "৫০ জনের প্যাকেজ",
-      price: 37500,
-      pricePerPerson: 750,
-      image: "https://images.othoba.com/images/thumbs/0720187_mutton-kacchi-full-bashmoti.jpeg",
-      features: [
-        "প্রিমিয়াম খাসির মাংস",
-        "উন্নতমানের চিনিগুড়া চাল",
-        "কাস্টম প্যাকেজিং",
-        "ফ্রি হোম ডেলিভারি",
-        "বোনাস সালাদ",
-        "বোনাস ফিরনি ডেজার্ট"
-      ]
-    }
-  ];
+  const [packages, setPackages] = useState([]);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      const { data, error } = await supabase
+        .from('packages')
+        .select('id, name, price');
+      
+      if (error) {
+        console.error('Error fetching packages:', error);
+      } else {
+        // হার্ডকোডেড ডাটা থেকে pricePerPerson এবং features যোগ করা
+        const enrichedPackages = data.map(pkg => ({
+          ...pkg,
+          pricePerPerson: pkg.price / (pkg.name.includes('৪') ? 4 : pkg.name.includes('২০') ? 20 : 50),
+          image: pkg.name.includes('৪') 
+            ? 'https://images.pexels.com/photos/7426867/pexels-photo-7426867.jpeg?auto=compress&cs=tinysrgb&w=1600'
+            : pkg.name.includes('২০')
+            ? 'https://img.freepik.com/premium-photo/fall-bone-meat-mutton-kacchi-biryani-realistic-photo_27550-6772.jpg'
+            : 'https://images.othoba.com/images/thumbs/0720187_mutton-kacchi-full-bashmoti.jpeg',
+          features: [
+            'প্রিমিয়াম খাসির মাংস',
+            'উন্নতমানের চিনিগুড়া চাল',
+            'কাস্টম প্যাকেজিং',
+            'ফ্রি হোম ডেলিভারি',
+            ...(pkg.name.includes('২০') || pkg.name.includes('৫০') ? ['বোনাস সালাদ'] : []),
+            ...(pkg.name.includes('৫০') ? ['বোনাস ফিরনি ডেজার্ট'] : []),
+          ],
+          popular: pkg.name.includes('২০'),
+        }));
+        setPackages(enrichedPackages);
+      }
+    };
+
+    fetchPackages();
+  }, []);
 
   const handleOrderClick = (packageId: string) => {
     setSelectedPackage(packageId);
@@ -93,7 +84,7 @@ const OrderSection: React.FC = () => {
             {packages.map((pkg, index) => (
               <PackageCard
                 key={pkg.id}
-                title={pkg.title}
+                title={pkg.name}
                 price={pkg.price}
                 pricePerPerson={pkg.pricePerPerson}
                 image={pkg.image}
@@ -101,15 +92,13 @@ const OrderSection: React.FC = () => {
                 popular={pkg.popular}
                 index={index}
                 onOrderClick={() => handleOrderClick(pkg.id)}
-                isDarkMode={isDarkMode} // নতুন প্রোপ যোগ করা
+                isDarkMode={isDarkMode}
               />
             ))}
           </div>
           
           <motion.p
-            className={`text-center mt-10 italic ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}
+            className={`text-center mt-10 italic ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}

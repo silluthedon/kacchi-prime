@@ -14,56 +14,38 @@ const AdminPage = () => {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [searchQuery, setSearchQuery] = useState('');
+  const [packages, setPackages] = useState([]);
+  const [newPrices, setNewPrices] = useState({}); // প্রতি প্যাকেজের জন্য আলাদা দাম
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
-      console.log('Checking user authentication...');
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error('Error fetching user:', error);
-          setError('ইউজার ডেটা লোড করতে ব্যর্থ: ' + error.message);
-          toast.error('ইউজার ডেটা লোড করতে ব্যর্থ: ' + error.message);
-          navigate('/login');
-          return;
-        }
-        if (!user) {
-          console.warn('No user is logged in');
-          setError('কোনো ইউজার লগইন করেনি।');
+        if (error || !user) {
+          setError('ইউজার লোড ব্যর্থ বা লগইন করা যায়নি।');
           toast.error('দয়া করে লগইন করুন।');
           navigate('/login');
           return;
         }
 
-        console.log('User fetched:', user.id);
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single();
 
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-          setError('প্রোফাইল ডেটা লোড করতে ব্যর্থ: ' + profileError.message);
-          toast.error('প্রোফাইল ডেটা লোড করতে ব্যর্থ: ' + profileError.message);
-          navigate('/login');
-          return;
-        }
-
-        console.log('Profile data:', profile);
-        if (profile.role !== 'admin') {
-          console.warn('User is not an admin:', profile.role);
-          setError('আপনার এডমিন প্যানেলে প্রবেশের অনুমতি নেই।');
-          toast.error('আপনার এডমিন প্যানেলে প্রবেশের অনুমতি নেই।');
+        if (profileError || profile.role !== 'admin') {
+          setError('আপনার এডমিন অ্যাক্সেস নেই।');
+          toast.error('এডমিন অ্যাক্সেস প্রয়োজন।');
           navigate('/login');
           return;
         }
 
         setUser(user);
-        fetchOrders(); // এখানে কল করা হচ্ছে
+        fetchOrders();
+        fetchPackages();
       } catch (err) {
-        console.error('Unexpected error:', err);
         setError('অজানা ত্রুটি: ' + err.message);
         toast.error('অজানা ত্রুটি: ' + err.message);
         navigate('/login');
@@ -71,7 +53,6 @@ const AdminPage = () => {
     };
 
     const fetchOrders = async () => {
-      console.log('Fetching orders...');
       try {
         setLoading(true);
         const { data, error } = await supabase
@@ -85,7 +66,6 @@ const AdminPage = () => {
           setOrders([]);
           setFilteredOrders([]);
         } else {
-          console.log('Orders fetched:', data);
           setOrders(data);
           setFilteredOrders(data);
         }
@@ -99,12 +79,24 @@ const AdminPage = () => {
       }
     };
 
-    // Auth state change listener যোগ করা
+    const fetchPackages = async () => {
+      const { data, error } = await supabase
+        .from('packages')
+        .select('*');
+      if (error) {
+        console.error('Error fetching packages:', error);
+      } else {
+        setPackages(data);
+      }
+    };
+
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
       if (event === 'SIGNED_IN') {
         setUser(session?.user ?? null);
-        if (session?.user) fetchOrders();
+        if (session?.user) {
+          fetchOrders();
+          fetchPackages();
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         navigate('/login');
@@ -246,6 +238,34 @@ const AdminPage = () => {
     }
   };
 
+  const handlePriceUpdate = async (packageId) => {
+    const priceToUpdate = newPrices[packageId] || '';
+    if (!priceToUpdate) {
+      toast.error('দয়া করে নতুন দাম লিখুন!');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('packages')
+      .update({ price: parseFloat(priceToUpdate) })
+      .eq('id', packageId);
+
+    if (error) {
+      console.error('Error updating price:', error);
+      toast.error('দাম আপডেটে ত্রুটি: ' + error.message);
+    } else {
+      toast.success('দাম সফলভাবে আপডেট করা হয়েছে!');
+      const { data } = await supabase
+        .from('packages')
+        .select('*')
+        .eq('id', packageId);
+      setPackages(packages.map(pkg => 
+        pkg.id === packageId ? data[0] : pkg
+      ));
+      setNewPrices(prev => ({ ...prev, [packageId]: '' })); // সেই প্যাকেজের ইনপুট ক্লিয়ার করা
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
@@ -276,7 +296,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">অ্যাডমিন পেজ: সব অর্ডার</h1>
+        <h1 className="text-3xl font-bold">এডমিন পেজ: সব অর্ডার</h1>
         <button
           onClick={async () => {
             try {
@@ -471,6 +491,36 @@ const AdminPage = () => {
           </table>
         </div>
       )}
+
+      {/* Package Price Update Section */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">প্যাকেজ দাম আপডেট</h2>
+        {packages.map((pkg) => (
+          <div key={pkg.id} className="mb-4 p-4 border border-gray-700 rounded">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">{pkg.name}</h3>
+                <p>বর্তমান দাম: {pkg.price} টাকা</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={newPrices[pkg.id] || ''}
+                  onChange={(e) => setNewPrices(prev => ({ ...prev, [pkg.id]: e.target.value }))}
+                  placeholder="নতুন দাম লিখুন"
+                  className="p-2 bg-gray-800 border border-gray-700 rounded text-white"
+                />
+                <button
+                  onClick={() => handlePriceUpdate(pkg.id)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  আপডেট
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
