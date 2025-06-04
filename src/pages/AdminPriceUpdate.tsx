@@ -110,11 +110,11 @@ const AdminPriceUpdate = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 sm:p-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">ত্রুটি</h1>
-          <p className="text-lg mb-4">{error}</p>
-          <a href="/login" className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+          <h1 className="text-xl sm:text-2xl font-bold mb-4">ত্রুটি</h1>
+          <p className="text-base sm:text-lg mb-4">{error}</p>
+          <a href="/login" className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm sm:text-base">
             লগইন পেজে ফিরুন
           </a>
         </div>
@@ -124,22 +124,22 @@ const AdminPriceUpdate = () => {
 
   if (!user || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 sm:p-6">
         <div className="text-center">
-          <p className="text-lg">লোড হচ্ছে...</p>
+          <p className="text-base sm:text-lg">লোড হচ্ছে...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="flex justify-between items-center mb-6 flex-wrap">
-        <h1 className="text-3xl font-bold">এডমিন পেজ: দাম ও ডেলিভারি চার্জ আপডেট</h1>
-        <div className="flex space-x-4">
+    <div className="min-h-screen bg-black text-white p-4 sm:p-6 max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">এডমিন পেজ: দাম ও ডেলিভারি চার্জ আপডেট</h1>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button
             onClick={() => navigate('/admin')}
-            className="py-2 px-4 bg-gray-600 rounded-md text-white font-bold hover:bg-gray-700 transition"
+            className="py-2 px-4 bg-gray-600 rounded-md text-white font-bold hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
           >
             অর্ডার পেজে ফিরুন
           </button>
@@ -154,7 +154,7 @@ const AdminPriceUpdate = () => {
                 toast.error('লগআউট ব্যর্থ: ' + err.message);
               }
             }}
-            className="py-2 px-4 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition"
+            className="py-2 px-4 bg-red-600 rounded-md text-white font-bold hover:bg-red-700 transition text-sm sm:text-base w-full sm:w-auto"
           >
             লগআউট
           </button>
@@ -163,30 +163,30 @@ const AdminPriceUpdate = () => {
 
       {packages.map((pkg) => (
         <div key={pkg.id} className="mb-4 p-4 border border-gray-700 rounded">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold">{pkg.name}</h3>
-              <p>বর্তমান দাম: {pkg.price} টাকা</p>
-              <p>বর্তমান ডেলিভারি চার্জ: {pkg.delivery_fee || 0} টাকা</p>
+              <h3 className="text-base sm:text-lg font-semibold">{pkg.name}</h3>
+              <p className="text-sm sm:text-base">বর্তমান দাম: {pkg.price} টাকা</p>
+              <p className="text-sm sm:text-base">বর্তমান ডেলিভারি চার্জ: {pkg.delivery_fee || 0} টাকা</p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               <input
                 type="number"
                 value={newPrices[pkg.id] || ''}
                 onChange={(e) => setNewPrices(prev => ({ ...prev, [pkg.id]: e.target.value }))}
                 placeholder="নতুন দাম"
-                className="p-2 bg-gray-800 border border-gray-700 rounded text-white"
+                className="p-2 bg-gray-800 border border-gray-700 rounded text-white text-sm sm:text-base w-full sm:w-32"
               />
               <input
                 type="number"
                 value={newDeliveryFees[pkg.id] || ''}
                 onChange={(e) => setNewDeliveryFees(prev => ({ ...prev, [pkg.id]: e.target.value }))}
                 placeholder="নতুন ডেলিভারি চার্জ"
-                className="p-2 bg-gray-800 border border-gray-700 rounded text-white"
+                className="p-2 bg-gray-800 border border-gray-700 rounded text-white text-sm sm:text-base w-full sm:w-32"
               />
               <button
                 onClick={() => handlePriceUpdate(pkg.id)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base w-full sm:w-auto"
               >
                 আপডেট
               </button>
