@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 
 interface PackageCardProps {
   title: string;
@@ -12,6 +11,7 @@ interface PackageCardProps {
   popular?: boolean;
   index: number;
   onOrderClick: () => void;
+  isDarkMode: boolean;
 }
 
 const PackageCard: React.FC<PackageCardProps> = ({
@@ -22,8 +22,11 @@ const PackageCard: React.FC<PackageCardProps> = ({
   features,
   popular = false,
   index,
-  onOrderClick
+  onOrderClick,
+  isDarkMode,
 }) => {
+  console.log(`PackageCard ${title}: isDarkMode = ${isDarkMode}`); // ডিবাগিং লগ
+
   const cardVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { 
@@ -47,7 +50,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
       viewport={{ once: true }}
     >
       {popular && (
-        <div className="bg-[#FFD700] text-black font-bold text-center py-2">
+        <div className={`font-bold text-center py-2 ${isDarkMode ? 'bg-[#FFD700] text-black' : 'bg-[#FFD700] text-black'}`}>
           সবচেয়ে জনপ্রিয়
         </div>
       )}
@@ -60,18 +63,18 @@ const PackageCard: React.FC<PackageCardProps> = ({
         />
       </div>
       
-      <div className="p-6 bg-gradient-to-b from-gray-900 to-black">
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+      <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+        <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
         <div className="mt-2 mb-4">
-          <p className="text-[#FFD700] text-2xl font-bold">{price.toLocaleString()} টাকা</p>
-          <p className="text-gray-400 text-sm">({pricePerPerson} টাকা করে একজন)</p>
+          <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString()} টাকা</p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson} টাকা করে একজন)</p>
         </div>
         
         <div className="space-y-2 mt-4 mb-6">
           {features.map((feature, idx) => (
             <div key={idx} className="flex items-center">
               <CheckCircle size={16} className="text-red-600 mr-2" />
-              <p className="text-gray-300 text-sm">{feature}</p>
+              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{feature}</p>
             </div>
           ))}
         </div>
@@ -81,7 +84,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
           className={`w-full py-3 rounded-md font-bold transition transform hover:scale-105 ${
             popular 
               ? 'bg-[#FFD700] text-black hover:bg-[#e5c200] hover:shadow-[#FFD700]/20 hover:shadow-lg' 
-              : 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg'
+              : isDarkMode 
+                ? 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg' 
+                : 'bg-red-600 text-gray-900 hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg'
           }`}
         >
           অর্ডার করুন

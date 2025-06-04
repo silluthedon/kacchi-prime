@@ -101,6 +101,7 @@ const OrderSection: React.FC = () => {
                 popular={pkg.popular}
                 index={index}
                 onOrderClick={() => handleOrderClick(pkg.id)}
+                isDarkMode={isDarkMode} // নতুন প্রোপ যোগ করা
               />
             ))}
           </div>
