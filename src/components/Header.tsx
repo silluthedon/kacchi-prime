@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Menu, X, Moon, Sun } from 'lucide-react';
@@ -42,7 +43,7 @@ const Header = () => {
           .eq('id', session.user.id)
           .single()
           .then(({ data, error }) => {
-            if (error) console.error('Role fetch error:', error);
+            if (error) console.error('Role fetch error');
             else setRole(data?.role);
           });
       } else {
@@ -67,28 +68,39 @@ const Header = () => {
     navigate('/login');
   };
 
+  const menuVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } },
+  };
+
+  const menuItemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 overflow-x-hidden  ${
         isScrolled
           ? isDarkMode ? 'bg-gray-900 shadow-lg' : 'bg-white shadow-lg'
           : isDarkMode ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md'
       } ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
     >
-      <div className="container mx-auto px-4 py-0.5 flex justify-between items-center">
+      <div className="container mx-auto px-4 py-1 flex justify-between items-center flex-wrap md:flex-nowrap">
         <div className="logo flex items-center">
           <RouterLink to="/">
             <img
               src={Logo}
               alt="Kacchi Prime Logo"
-              className="h-20 w-auto mr-3 object-contain"
+              className="h-12 w-auto mr-2 object-contain"
             />
           </RouterLink>
         </div>
-        
-        <div className="hidden md:flex space-x-6">
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex space-x-6 items-center flex-grow justify-center">
           {!user ? (
-            <RouterLink to="/login" className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+            <RouterLink to="/login" className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors text-sm md:text-base py-1`}>
               লগ ইন
             </RouterLink>
           ) : role === 'admin' ? (
@@ -98,141 +110,121 @@ const Header = () => {
               </RouterLink>
               <button 
                 onClick={handleLogout}
-                className={`px-6 py-2 rounded-md font-bold transition transform hover:scale-105 hover:shadow-lg ${isDarkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-gray-900'}`}
+                className={`px-6 py-1 rounded-md font-bold transition transform hover:scale-105 hover:shadow-lg ${isDarkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-gray-900'}`}
               >
                 লগআউট
               </button>
             </>
           ) : null}
-          
-          <ScrollLink to="special" smooth={true} duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+
+          <ScrollLink to="special" smooth duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
             বিশেষত্ব
           </ScrollLink>
-          <ScrollLink to="rarity" smooth={true} duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+          <ScrollLink to="rarity" smooth duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
             কেন দুর্লভ
           </ScrollLink>
-          <ScrollLink to="howtoget" smooth={true} duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+          <ScrollLink to="howtoget" smooth duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
             কিভাবে পাবেন
           </ScrollLink>
-          <ScrollLink to="order" smooth={true} duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+          <ScrollLink to="order" smooth duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
             প্যাকেজ
           </ScrollLink>
-          <ScrollLink to="faq" smooth={true} duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
+          <ScrollLink to="faq" smooth duration={500} className={`cursor-pointer ${isDarkMode ? 'hover:text-[#FFD700]' : 'hover:text-red-600'} transition-colors`}>
             FAQ
           </ScrollLink>
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <ScrollLink 
-            to="order" 
-            smooth={true} 
-            duration={500} 
-            className={`hidden md:block px-6 py-2 rounded-md font-bold transition transform hover:scale-105 hover:shadow-lg ${isDarkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-gray-900'}`}
-          >
-            অর্ডার করুন
-          </ScrollLink>
-          
-          <button 
-            onClick={toggleTheme}
-            className={`p-2 rounded-full transition ${isDarkMode ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-          >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
-        </div>
-        
-        <button 
-          className="md:hidden focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+
+        {/* Right Side Buttons */}
+<div className="flex items-center space-x-2 ml-auto mt-2 md:mt-0 shrink-0">
+  <button 
+    className="md:hidden focus:outline-none"
+    onClick={() => setIsOpen(!isOpen)}
+  >
+    {isOpen ? <X size={20} /> : <Menu size={20} />}
+  </button>
+  <button 
+    onClick={toggleTheme}
+    className={`p-6 rounded-full transition ${isDarkMode ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
+  >
+    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+  </button>
+</div>
       </div>
-      
+
+      {/* Mobile Menu */}
       {isOpen && (
-        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} md:hidden`}>
-          <div className="flex flex-col items-center py-4 space-y-4">
+        <motion.div 
+          className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} md:hidden`}
+          initial="hidden"
+          animate="visible"
+          variants={menuVariants}
+        >
+          <div className="flex flex-col items-center space-y-3 py-4">
             {!user ? (
-              <RouterLink 
-                to="/login" 
-                className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-                onClick={() => setIsOpen(false)}
-              >
-                লগ ইন
-              </RouterLink>
-            ) : role === 'admin' ? (
-              <>
+              <motion.div variants={menuItemVariants}>
                 <RouterLink 
-                  to="/admin" 
-                  className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
+                  to="/login" 
+                  className={`w-full text-center py-2 text-lg ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
                   onClick={() => setIsOpen(false)}
                 >
-                  এডমিন প্যানেল
+                  লগ ইন
                 </RouterLink>
-                <button 
-                  onClick={handleLogout}
-                  className={`w-full py-3 text-center font-bold ${isDarkMode ? 'bg-red-600 text-white' : 'bg-red-600 text-gray-900'}`}
-                >
-                  লগআউট
-                </button>
+              </motion.div>
+            ) : role === 'admin' ? (
+              <>
+                <motion.div variants={menuItemVariants}>
+                  <RouterLink 
+                    to="/admin" 
+                    className={`w-full text-center py-2 text-lg ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    এডমিন প্যানেল
+                  </RouterLink>
+                </motion.div>
+                <motion.div variants={menuItemVariants}>
+                  <button 
+                    onClick={handleLogout}
+                    className={`w-full py-2 text-center font-bold text-lg ${isDarkMode ? 'bg-red-600 text-white' : 'bg-red-600 text-gray-900'}`}
+                  >
+                    লগআউট
+                  </button>
+                </motion.div>
               </>
             ) : null}
 
-            <ScrollLink 
-              to="special" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              বিশেষত্ব
-            </ScrollLink>
-            <ScrollLink 
-              to="rarity" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              কেন দুর্লভ
-            </ScrollLink>
-            <ScrollLink 
-              to="howtoget" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              কিভাবে পাবেন
-            </ScrollLink>
-            <ScrollLink 
-              to="order" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              প্যাকেজ
-            </ScrollLink>
-            <ScrollLink 
-              to="faq" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full text-center py-2 ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              FAQ
-            </ScrollLink>
-            <ScrollLink 
-              to="order" 
-              smooth={true} 
-              duration={500} 
-              className={`w-full py-3 text-center font-bold ${isDarkMode ? 'bg-red-600 text-white' : 'bg-red-600 text-gray-900'}`}
-              onClick={() => setIsOpen(false)}
-            >
-              অর্ডার করুন
-            </ScrollLink>
+            {["special", "rarity", "howtoget", "order", "faq"].map((id, index) => (
+              <motion.div key={id} variants={menuItemVariants}>
+                <ScrollLink 
+                  to={id}
+                  smooth 
+                  duration={500} 
+                  className={`w-full text-center py-2 text-lg ${isDarkMode ? 'hover:bg-gray-800 text-white' : 'hover:bg-gray-200 text-gray-900'}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {{
+                    special: 'বিশেষত্ব',
+                    rarity: 'কেন দুর্লভ',
+                    howtoget: 'কিভাবে পাবেন',
+                    order: 'প্যাকেজ',
+                    faq: 'FAQ'
+                  }[id]}
+                </ScrollLink>
+              </motion.div>
+            ))}
+
+            <motion.div variants={menuItemVariants}>
+              <ScrollLink 
+                to="order" 
+                smooth 
+                duration={500} 
+                className={`w-full py-3 text-center font-bold text-lg ${isDarkMode ? 'bg-red-600 text-white' : 'bg-red-600 text-gray-900'}`}
+                onClick={() => setIsOpen(false)}
+              >
+                অর্ডার করুন
+              </ScrollLink>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
     </header>
   );
