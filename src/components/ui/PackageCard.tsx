@@ -18,7 +18,7 @@ interface PackageCardProps {
 const PackageCard: React.FC<PackageCardProps> = ({
   title,
   price: initialPrice,
-  pricePerPerson: initialPricePerPerson,
+  pricePerPerson,
   image,
   features,
   popular = false,
@@ -27,45 +27,50 @@ const PackageCard: React.FC<PackageCardProps> = ({
   isDarkMode,
   deliveryFee,
 }) => {
-  const [quantity, setQuantity] = useState(1);
+  const [totalPersons, setTotalPersons] = useState(
+    title.includes('৪ জনের') ? 4 : title.includes('২০ জনের') ? 20 : 50
+  );
   const [price, setPrice] = useState(initialPrice);
-  const [pricePerPerson] = useState(initialPricePerPerson);
 
-  const baseQuantity = title.includes('৪ জনের') ? 4 : title.includes('২০ জনের') ? 20 : 50;
+  const baseTitle = title.replace(/৪ জনের|২০ জনের|৫০ জনের/, '').trim();
+  const displayTitle = `${baseTitle} ${totalPersons.toLocaleString('bn-BD')} জনের`;
+
   const handleIncrease = () => {
-    let newQuantity;
+    let newTotalPersons;
     if (title.includes('৪ জনের')) {
-      newQuantity = Math.min(quantity * baseQuantity + 1, 19);
+      newTotalPersons = Math.min(totalPersons + 1, 19);
     } else if (title.includes('২০ জনের')) {
-      newQuantity = Math.min(quantity * baseQuantity + 2, 48);
+      newTotalPersons = Math.min(totalPersons + 2, 48);
     } else if (title.includes('৫০ জনের')) {
-      newQuantity = quantity * baseQuantity + 5;
+      newTotalPersons = totalPersons + 5;
+    } else {
+      return; // Safety check for unexpected titles
     }
-    if (newQuantity > quantity * baseQuantity) {
-      const newPrice = newQuantity * pricePerPerson + deliveryFee;
-      setQuantity(Math.ceil(newQuantity / baseQuantity));
+
+    if (newTotalPersons !== totalPersons) {
+      setTotalPersons(newTotalPersons);
+      const newPrice = newTotalPersons * pricePerPerson + deliveryFee;
       setPrice(newPrice);
     }
   };
 
   const handleOrder = () => {
-    const totalQuantity = quantity * baseQuantity;
-    console.log('Order clicked - Quantity:', totalQuantity, 'Price:', price); // Debug log
-    onOrderClick(totalQuantity, price);
+    console.log('Order clicked - Quantity:', totalPersons, 'Price:', price);
+    onOrderClick(totalPersons, price);
   };
 
   console.log(`PackageCard ${title}: isDarkMode = ${isDarkMode}`);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
+      transition: {
         duration: 0.5,
-        delay: index * 0.2
-      }
-    }
+        delay: index * 0.2,
+      },
+    },
   };
 
   return (
@@ -77,9 +82,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
       viewport={{ once: true }}
     >
       <div className="relative h-48 overflow-hidden">
-        <img 
-          src={image} 
-          alt={title} 
+        <img
+          src={image}
+          alt={title}
           className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-110"
         />
         {popular && (
@@ -88,23 +93,33 @@ const PackageCard: React.FC<PackageCardProps> = ({
           </div>
         )}
       </div>
-      
-      <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col justify-between h-[calc(100%-12rem)] min-h-[300px]`}>
+
+      <div
+        className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col justify-between h-[calc(100%-12rem)] min-h-[300px]`}
+      >
         <div>
-          <h3 
+          <h3
             className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
             onClick={handleIncrease}
             style={{ cursor: 'pointer' }}
           >
-            {title} <span className="text-red-600">+</span>
+            {displayTitle} <span className="text-red-600">+</span>
           </h3>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>মোট পরিমাণ: {(quantity * baseQuantity).toLocaleString('bn-BD')} জন</p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+            মোট পরিমাণ: {totalPersons.toLocaleString('bn-BD')} জন
+          </p>
           <div className="mt-2 mb-4">
-            <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString('bn-BD')} টাকা</p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson.toLocaleString('bn-BD')} টাকা করে একজন)</p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>ডেলিভারি চার্জ: {deliveryFee.toLocaleString('bn-BD')} টাকা</p>
+            <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>
+              {price.toLocaleString('bn-BD')} টাকা
+            </p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              ({pricePerPerson.toLocaleString('bn-BD')} টাকা করে একজন)
+            </p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>
+              ডেলিভারি চার্জ: {deliveryFee.toLocaleString('bn-BD')} টাকা
+            </p>
           </div>
-          
+
           <div className="space-y-2 mt-4">
             {features.map((feature, idx) => (
               <div key={idx} className="flex items-center">
@@ -114,15 +129,15 @@ const PackageCard: React.FC<PackageCardProps> = ({
             ))}
           </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={handleOrder}
           className={`w-full py-3 rounded-md font-bold transition transform hover:scale-105 mt-4 ${
-            popular 
-              ? 'bg-[#FFD700] text-black hover:bg-[#e5c200] hover:shadow-[#FFD700]/20 hover:shadow-lg' 
-              : isDarkMode 
-                ? 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg' 
-                : 'bg-red-600 text-gray-900 hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg'
+            popular
+              ? 'bg-[#FFD700] text-black hover:bg-[#e5c200] hover:shadow-[#FFD700]/20 hover:shadow-lg'
+              : isDarkMode
+              ? 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg'
+              : 'bg-red-600 text-gray-900 hover:bg-red-700 hover:shadow-red-600/20 hover:shadow-lg'
           }`}
         >
           অর্ডার করুন
