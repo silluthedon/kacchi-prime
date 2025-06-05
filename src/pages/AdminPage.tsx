@@ -12,9 +12,12 @@ const AdminPage = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState('All');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
+  const [packageFilter, setPackageFilter] = useState('All');
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [searchQuery, setSearchQuery] = useState('');
   const [packages, setPackages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 20;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,6 +132,9 @@ const AdminPage = () => {
     if (paymentStatusFilter !== 'All') {
       updatedOrders = updatedOrders.filter(order => order.payment_status === paymentStatusFilter);
     }
+    if (packageFilter !== 'All') {
+      updatedOrders = updatedOrders.filter(order => order.item === packageFilter);
+    }
 
     if (sortBy === 'created_at_desc') {
       updatedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -149,7 +155,8 @@ const AdminPage = () => {
     }
 
     setFilteredOrders(updatedOrders);
-  }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, sortBy, searchQuery]);
+    setCurrentPage(1); // Reset to first page on filter/sort change
+  }, [orders, orderStatusFilter, deliveryStatusFilter, paymentStatusFilter, packageFilter, sortBy, searchQuery]);
 
   const handleStatusChange = async (orderId, field, newStatus) => {
     console.log(`Updating ${field} for order ${orderId} to ${newStatus}`);
@@ -234,6 +241,24 @@ const AdminPage = () => {
         'PartiallyPaid': 'bg-orange-500',
         'FullyPaid': 'bg-green-500',
       }[status] || 'bg-gray-500';
+    }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const startIndex = (currentPage - 1) * ordersPerPage;
+  const endIndex = startIndex + ordersPerPage;
+  const currentOrders = filteredOrders.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -345,6 +370,19 @@ const AdminPage = () => {
           </select>
         </div>
         <div>
+          <label className="block text-sm mb-1">প্যাকেজ ফিল্টার</label>
+          <select
+            value={packageFilter}
+            onChange={(e) => setPackageFilter(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="All">সব</option>
+            {packages.map((pkg) => (
+              <option key={pkg.id} value={pkg.name}>{pkg.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
           <label className="block text-sm mb-1">সাজানো</label>
           <select
             value={sortBy}
@@ -369,106 +407,129 @@ const AdminPage = () => {
       ) : filteredOrders.length === 0 ? (
         <p className="text-lg">কোনো অর্ডার নেই।</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-700">
-            <thead>
-              <tr className="bg-gray-800">
-                <th className="border border-gray-700 p-3 text-left">অর্ডার আইডি</th>
-                <th className="border border-gray-700 p-3 text-left">কাস্টমার নাম</th>
-                <th className="border border-gray-700 p-3 text-left">প্যাকেজ</th>
-                <th className="border border-gray-700 p-3 text-left">পরিমাণ</th>
-                <th className="border border-gray-700 p-3 text-left">ফোন</th>
-                <th className="border border-gray-700 p-3 text-left">ইমেইল</th>
-                <th className="border border-gray-700 p-3 text-left">ঠিকানা</th>
-                <th className="border border-gray-700 p-3 text-left">অতিরিক্ত তথ্য</th>
-                <th className="border border-gray-700 p-3 text-left">ডেলিভারি তারিখ</th>
-                <th className="border border-gray-700 p-3 text-left">অর্ডারের তারিখ</th>
-                <th className="border border-gray-700 p-3 text-left">অর্ডার স্ট্যাটাস</th>
-                <th className="border border-gray-700 p-3 text-left">ডেলিভারি স্ট্যাটাস</th>
-                <th className="border border-gray-700 p-3 text-left">পেমেন্ট স্ট্যাটাস</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-900">
-                  <td className="border border-gray-700 p-3">{order.id}</td>
-                  <td className="border border-gray-700 p-3">{order.customer_name || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.item || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.quantity || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.phone || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.email || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.address || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">{order.additional_info || 'N/A'}</td>
-                  <td className="border border-gray-700 p-3">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="date"
-                        value={order.delivery_date ? order.delivery_date.split('T')[0] : ''}
-                        onChange={(e) => handleDeliveryDateChange(order.id, e.target.value)}
-                        className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                  </td>
-                  <td className="border border-gray-700 p-3">
-                    {order.created_at
-                      ? new Date(order.created_at).toLocaleDateString('bn-BD')
-                      : 'N/A'}
-                  </td>
-                  <td className="border border-gray-700 p-3">
-                    <div className="relative inline-block">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.order_status, 'order_status')}`}>
-                        {order.order_status || 'N/A'}
-                      </span>
-                      <select
-                        value={order.order_status || ''}
-                        onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      >
-                        <option value="Ordered">Ordered</option>
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Date Assigned">Date Assigned</option>
-                        <option value="Delivered">Delivered</option>
-                      </select>
-                    </div>
-                  </td>
-                  <td className="border border-gray-700 p-3">
-                    <div className="relative inline-block">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
-                        {order.delivery_status || 'N/A'}
-                      </span>
-                      <select
-                        value={order.delivery_status || ''}
-                        onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      >
-                        <option value="OnTheWay">On The Way</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Returned">Returned</option>
-                      </select>
-                    </div>
-                  </td>
-                  <td className="border border-gray-700 p-3">
-                    <div className="relative inline-block">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.payment_status, 'payment_status')}`}>
-                        {order.payment_status || 'N/A'}
-                      </span>
-                      <select
-                        value={order.payment_status || ''}
-                        onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      >
-                        <option value="Unpaid">Unpaid</option>
-                        <option value="FullyPaid">Fully Paid</option>
-                        <option value="PartiallyPaid">Partially Paid</option>
-                      </select>
-                    </div>
-                  </td>
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-700">
+              <thead>
+                <tr className="bg-gray-800">
+                  <th className="border border-gray-700 p-3 text-left">অর্ডার আইডি</th>
+                  <th className="border border-gray-700 p-3 text-left">কাস্টমার নাম</th>
+                  <th className="border border-gray-700 p-3 text-left">প্যাকেজ</th>
+                  <th className="border border-gray-700 p-3 text-left">পরিমাণ</th>
+                  <th className="border border-gray-700 p-3 text-left">ফোন</th>
+                  <th className="border border-gray-700 p-3 text-left">ইমেইল</th>
+                  <th className="border border-gray-700 p-3 text-left">ঠিকানা</th>
+                  <th className="border border-gray-700 p-3 text-left">অতিরিক্ত তথ্য</th>
+                  <th className="border border-gray-700 p-3 text-left">ডেলিভারি তারিখ</th>
+                  <th className="border border-gray-700 p-3 text-left">অর্ডারের তারিখ</th>
+                  <th className="border border-gray-700 p-3 text-left">অর্ডার স্ট্যাটাস</th>
+                  <th className="border border-gray-700 p-3 text-left">ডেলিভারি স্ট্যাটাস</th>
+                  <th className="border border-gray-700 p-3 text-left">পেমেন্ট স্ট্যাটাস</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-900">
+                    <td className="border border-gray-700 p-3">{order.id}</td>
+                    <td className="border border-gray-700 p-3">{order.customer_name || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.item || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.quantity || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.phone || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.email || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.address || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.additional_info || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          value={order.delivery_date ? order.delivery_date.split('T')[0] : ''}
+                          onChange={(e) => handleDeliveryDateChange(order.id, e.target.value)}
+                          className="bg-gray-800 text-white border border-gray-700 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-red-600"
+                          min={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                    </td>
+                    <td className="border border-gray-700 p-3">
+                      {order.created_at
+                        ? new Date(order.created_at).toLocaleDateString('bn-BD')
+                        : 'N/A'}
+                    </td>
+                    <td className="border border-gray-700 p-3">
+                      <div className="relative inline-block">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.order_status, 'order_status')}`}>
+                          {order.order_status || 'N/A'}
+                        </span>
+                        <select
+                          value={order.order_status || ''}
+                          onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        >
+                          <option value="Ordered">Ordered</option>
+                          <option value="Confirmed">Confirmed</option>
+                          <option value="Date Assigned">Date Assigned</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td className="border border-gray-700 p-3">
+                      <div className="relative inline-block">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
+                          {order.delivery_status || 'N/A'}
+                        </span>
+                        <select
+                          value={order.delivery_status || ''}
+                          onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        >
+                          <option value="OnTheWay">On The Way</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Returned">Returned</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td className="border border-gray-700 p-3">
+                      <div className="relative inline-block">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.payment_status, 'payment_status')}`}>
+                          {order.payment_status || 'N/A'}
+                        </span>
+                        <select
+                          value={order.payment_status || ''}
+                          onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        >
+                          <option value="Unpaid">Unpaid</option>
+                          <option value="FullyPaid">Fully Paid</option>
+                          <option value="PartiallyPaid">Partially Paid</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className={`py-2 px-4 rounded-md text-white font-bold transition ${currentPage === 1 ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              পূর্ববর্তী পেজ
+            </button>
+            <span>
+              পেজ {currentPage} এর মধ্যে {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className={`py-2 px-4 rounded-md text-white font-bold transition ${currentPage === totalPages ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              পরবর্তী পেজ
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
