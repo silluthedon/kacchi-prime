@@ -7,6 +7,7 @@ const AdminPriceUpdate = () => {
   const [packages, setPackages] = useState([]);
   const [newPrices, setNewPrices] = useState({});
   const [newDeliveryFees, setNewDeliveryFees] = useState({});
+  const [bonusOptions, setBonusOptions] = useState({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -55,8 +56,17 @@ const AdminPriceUpdate = () => {
         setPackages(data);
         const initialPrices = data.reduce((acc, pkg) => ({ ...acc, [pkg.id]: pkg.price }), {});
         const initialFees = data.reduce((acc, pkg) => ({ ...acc, [pkg.id]: pkg.delivery_fee || 0 }), {});
+        const initialBonuses = data.reduce((acc, pkg) => ({
+          ...acc,
+          [pkg.id]: {
+            firni: pkg.bonus_firni || false,
+            salad: pkg.bonus_salad || false,
+            borhani: pkg.bonus_borhani || false,
+          },
+        }), {});
         setNewPrices(initialPrices);
         setNewDeliveryFees(initialFees);
+        setBonusOptions(initialBonuses);
       }
       setLoading(false);
     };
@@ -81,14 +91,19 @@ const AdminPriceUpdate = () => {
   const handlePriceUpdate = async (packageId) => {
     const newPrice = newPrices[packageId];
     const newFee = newDeliveryFees[packageId];
-    if (!newPrice && !newFee) {
-      toast.error('দয়া করে দাম বা ডেলিভারি চার্জ আপডেট করুন!');
+    const { firni, salad, borhani } = bonusOptions[packageId] || {};
+
+    if (!newPrice && !newFee && !firni && !salad && !borhani) {
+      toast.error('দয়া করে দাম, ডেলিভারি চার্জ, বা বোনাস অপশন আপডেট করুন!');
       return;
     }
 
     const updates = {};
     if (newPrice) updates.price = parseFloat(newPrice);
     if (newFee !== undefined && newFee !== null) updates.delivery_fee = parseFloat(newFee);
+    if (firni !== undefined) updates.bonus_firni = firni;
+    if (salad !== undefined) updates.bonus_salad = salad;
+    if (borhani !== undefined) updates.bonus_borhani = borhani;
 
     const { error } = await supabase
       .from('packages')
@@ -99,7 +114,7 @@ const AdminPriceUpdate = () => {
       console.error('Error updating package:', error);
       toast.error('আপডেটে ত্রুটি: ' + error.message);
     } else {
-      toast.success('দাম ও ডেলিভারি চার্জ সফলভাবে আপডেট করা হয়েছে!');
+      toast.success('দাম, ডেলিভারি চার্জ ও বোনাস অপশন সফলভাবে আপডেট করা হয়েছে!');
       const { data } = await supabase
         .from('packages')
         .select('*')
@@ -191,6 +206,44 @@ const AdminPriceUpdate = () => {
                 আপডেট
               </button>
             </div>
+          </div>
+          <div className="mt-4 flex flex-col sm:flex-row gap-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={bonusOptions[pkg.id]?.firni || false}
+                onChange={(e) => setBonusOptions(prev => ({
+                  ...prev,
+                  [pkg.id]: { ...prev[pkg.id], firni: e.target.checked }
+                }))}
+                className="mr-2"
+              />
+              বোনাস ফিরনি ডেজার্ট
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={bonusOptions[pkg.id]?.salad || false}
+                onChange={(e) => setBonusOptions(prev => ({
+                  ...prev,
+                  [pkg.id]: { ...prev[pkg.id], salad: e.target.checked }
+                }))}
+                className="mr-2"
+              />
+              বোনাস সালাদ
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={bonusOptions[pkg.id]?.borhani || false}
+                onChange={(e) => setBonusOptions(prev => ({
+                  ...prev,
+                  [pkg.id]: { ...prev[pkg.id], borhani: e.target.checked }
+                }))}
+                className="mr-2"
+              />
+              বোনাস বোরহানি
+            </label>
           </div>
         </div>
       ))}

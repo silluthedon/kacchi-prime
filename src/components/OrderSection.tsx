@@ -17,7 +17,7 @@ const OrderSection: React.FC = () => {
     const fetchPackages = async () => {
       const { data, error } = await supabase
         .from('packages')
-        .select('id, name, price, delivery_fee');
+        .select('id, name, price, delivery_fee, bonus_firni, bonus_salad, bonus_borhani');
       
       if (error) {
         console.error('Error fetching packages:', error);
@@ -34,9 +34,10 @@ const OrderSection: React.FC = () => {
             'প্রিমিয়াম খাসির মাংস',
             'উন্নতমানের চিনিগুড়া চাল',
             'কাস্টম প্যাকেজিং',
-            'ফ্রি হোম ডেলিভারি',
-            ...(pkg.name.includes('২০') || pkg.name.includes('৫০') ? ['বোনাস সালাদ'] : []),
-            ...(pkg.name.includes('৫০') ? ['বোনাস ফিরনি ডেজার্ট'] : []),
+            ...(pkg.delivery_fee === 0 ? ['ফ্রি হোম ডেলিভারি'] : []),
+            ...(pkg.bonus_salad ? ['বোনাস সালাদ'] : []),
+            ...(pkg.bonus_firni ? ['বোনাস ফিরনি ডেজার্ট'] : []),
+            ...(pkg.bonus_borhani ? ['বোনাস বোরহানি'] : []),
           ],
           popular: pkg.name.includes('২০'),
         }));
@@ -52,7 +53,7 @@ const OrderSection: React.FC = () => {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'packages' }, (payload) => {
         setPackages(prevPackages =>
           prevPackages.map(pkg =>
-            pkg.id === payload.new.id ? { ...pkg, price: payload.new.price, delivery_fee: payload.new.delivery_fee } : pkg
+            pkg.id === payload.new.id ? { ...pkg, price: payload.new.price, delivery_fee: payload.new.delivery_fee, bonus_firni: payload.new.bonus_firni, bonus_salad: payload.new.bonus_salad, bonus_borhani: payload.new.bonus_borhani } : pkg
           )
         );
       })
