@@ -30,53 +30,45 @@ const PackageCard: React.FC<PackageCardProps> = ({
   // Debug the title prop to ensure it's being passed correctly
   console.log(`PackageCard Title: ${title}`);
 
-  // Determine base persons and package name based on title
+  // Determine base persons based on title
   const basePersons = title === "৪ জনের প্যাকেজ" ? 4 : title === "২০ জনের প্যাকেজ" ? 20 : 50;
-  const packageName = title === "৪ জনের প্যাকেজ"
-    ? "৪ জনের প্যাকেজ"
-    : title === "২০ জনের প্যাকেজ"
-    ? "২০ জনের প্যাকেজ"
-    : "৫০ জনের প্যাকেজ";
 
   const [totalPersons, setTotalPersons] = useState(basePersons);
   const [price, setPrice] = useState(initialPrice);
-  const [count, setCount] = useState(0); // Tracks additional persons beyond minimum
+
+  // Function to convert English numbers to Bangla numbers
+  const toBanglaNumber = (num: number) => {
+    const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    return num.toString().split("").map(digit => banglaDigits[parseInt(digit)]).join("");
+  };
 
   const handleIncrease = () => {
-    let newCount, newTotalPersons;
+    let newTotalPersons;
     if (title === "৪ জনের প্যাকেজ") {
-      newCount = Math.min(count + 1, 15); // Max 19 - 4 = 15
       newTotalPersons = Math.min(totalPersons + 1, 19);
     } else if (title === "২০ জনের প্যাকেজ") {
-      newCount = Math.min(count + 2, 28); // Max 48 - 20 = 28
       newTotalPersons = Math.min(totalPersons + 2, 48);
     } else {
-      newCount = count + 5;
       newTotalPersons = totalPersons + 5;
     }
 
     if (newTotalPersons !== totalPersons) {
-      setCount(newCount);
       setTotalPersons(newTotalPersons);
       setPrice(newTotalPersons * pricePerPerson + deliveryFee);
     }
   };
 
   const handleDecrease = () => {
-    let newCount, newTotalPersons;
+    let newTotalPersons;
     if (title === "৪ জনের প্যাকেজ") {
-      newCount = Math.max(count - 1, 0); // Min 4 (0 extra)
       newTotalPersons = Math.max(totalPersons - 1, 4);
     } else if (title === "২০ জনের প্যাকেজ") {
-      newCount = Math.max(count - 2, 0); // Min 20 (0 extra)
       newTotalPersons = Math.max(totalPersons - 2, 20);
     } else {
-      newCount = Math.max(count - 5, 0); // Min 50 (0 extra)
       newTotalPersons = Math.max(totalPersons - 5, 50);
     }
 
     if (newTotalPersons !== totalPersons) {
-      setCount(newCount);
       setTotalPersons(newTotalPersons);
       setPrice(newTotalPersons * pricePerPerson + deliveryFee);
     }
@@ -100,6 +92,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
       },
     },
   };
+
+  // Dynamic package title in Bangla with Bangla numbers
+  const dynamicTitle = `${toBanglaNumber(totalPersons)} জনের প্যাকেজ`;
 
   return (
     <motion.div
@@ -130,22 +125,19 @@ const PackageCard: React.FC<PackageCardProps> = ({
             className={`text-xl font-semibold ${isDarkMode ? "text-white" : "text-gray-900"} flex items-center gap-2`}
             style={{ cursor: "default" }}
           >
-            {packageName}
+            {totalPersons > basePersons && (
+              <Minus
+                size={25}
+                className="text-red-500 hover:text-red-700 cursor-pointer transition-colors mr-2"
+                onClick={handleDecrease}
+              />
+            )}
+            {dynamicTitle}
             <Plus
               size={25}
-              className="text-red-500 hover:text-red-700 cursor-pointer transition-colors"
+              className="text-red-500 hover:text-red-700 cursor-pointer transition-colors ml-2"
               onClick={handleIncrease}
             />
-            {totalPersons > basePersons && (
-              <>
-                <span className="text-sm text-gray-500">[{count}]</span>
-                <Minus
-                  size={25}
-                  className="text-red-500 hover:text-red-700 cursor-pointer transition-colors"
-                  onClick={handleDecrease}
-                />
-              </>
-            )}
           </h3>
           <div className="mt-4 mb-6">
             <p
@@ -165,7 +157,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
             {features.map((feature, idx) => (
               <div key={idx} className="flex items-center">
                 <CheckCircle size={16} className="text-red-600 mr-2" />
-                <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                <p className={["text-sm", isDarkMode ? "text-gray-300" : "text-gray-700"].join(" ")}>
                   {feature}
                 </p>
               </div>
