@@ -93,17 +93,12 @@ const AdminPriceUpdate = () => {
     const newFee = newDeliveryFees[packageId];
     const { firni, salad, borhani } = bonusOptions[packageId] || {};
 
-    if (!newPrice && !newFee && !firni && !salad && !borhani) {
-      toast.error('দয়া করে দাম, ডেলিভারি চার্জ, বা বোনাস অপশন আপডেট করুন!');
-      return;
-    }
-
     const updates = {};
     if (newPrice) updates.price = parseFloat(newPrice);
     if (newFee !== undefined && newFee !== null) updates.delivery_fee = parseFloat(newFee);
-    if (firni !== undefined) updates.bonus_firni = firni;
-    if (salad !== undefined) updates.bonus_salad = salad;
-    if (borhani !== undefined) updates.bonus_borhani = borhani;
+    updates.bonus_firni = firni ?? false;
+    updates.bonus_salad = salad ?? false;
+    updates.bonus_borhani = borhani ?? false;
 
     const { error } = await supabase
       .from('packages')
