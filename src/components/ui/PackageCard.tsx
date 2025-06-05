@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 
@@ -10,15 +10,15 @@ interface PackageCardProps {
   features: string[];
   popular?: boolean;
   index: number;
-  onOrderClick: () => void;
+  onOrderClick: (quantity: number, price: number) => void;
   isDarkMode: boolean;
   deliveryFee: number;
 }
 
 const PackageCard: React.FC<PackageCardProps> = ({
   title,
-  price,
-  pricePerPerson,
+  price: initialPrice,
+  pricePerPerson: initialPricePerPerson,
   image,
   features,
   popular = false,
@@ -27,6 +27,33 @@ const PackageCard: React.FC<PackageCardProps> = ({
   isDarkMode,
   deliveryFee,
 }) => {
+  const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState(initialPrice);
+  const [pricePerPerson] = useState(initialPricePerPerson);
+
+  const baseQuantity = title.includes('৪ জনের') ? 4 : title.includes('২০ জনের') ? 20 : 50;
+  const handleIncrease = () => {
+    let newQuantity;
+    if (title.includes('৪ জনের')) {
+      newQuantity = Math.min(quantity * baseQuantity + 1, 19);
+    } else if (title.includes('২০ জনের')) {
+      newQuantity = Math.min(quantity * baseQuantity + 2, 48);
+    } else if (title.includes('৫০ জনের')) {
+      newQuantity = quantity * baseQuantity + 5;
+    }
+    if (newQuantity > quantity * baseQuantity) {
+      const newPrice = newQuantity * pricePerPerson + deliveryFee;
+      setQuantity(Math.ceil(newQuantity / baseQuantity));
+      setPrice(newPrice);
+    }
+  };
+
+  const handleOrder = () => {
+    const totalQuantity = quantity * baseQuantity;
+    console.log('Order clicked - Quantity:', totalQuantity, 'Price:', price); // Debug log
+    onOrderClick(totalQuantity, price);
+  };
+
   console.log(`PackageCard ${title}: isDarkMode = ${isDarkMode}`);
 
   const cardVariants = {
@@ -64,7 +91,14 @@ const PackageCard: React.FC<PackageCardProps> = ({
       
       <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col justify-between h-[calc(100%-12rem)] min-h-[300px]`}>
         <div>
-          <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
+          <h3 
+            className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+            onClick={handleIncrease}
+            style={{ cursor: 'pointer' }}
+          >
+            {title} <span className="text-red-600">+</span>
+          </h3>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>মোট পরিমাণ: {(quantity * baseQuantity).toLocaleString('bn-BD')} জন</p>
           <div className="mt-2 mb-4">
             <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString('bn-BD')} টাকা</p>
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson.toLocaleString('bn-BD')} টাকা করে একজন)</p>
@@ -82,7 +116,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
         </div>
         
         <button 
-          onClick={onOrderClick}
+          onClick={handleOrder}
           className={`w-full py-3 rounded-md font-bold transition transform hover:scale-105 mt-4 ${
             popular 
               ? 'bg-[#FFD700] text-black hover:bg-[#e5c200] hover:shadow-[#FFD700]/20 hover:shadow-lg' 
