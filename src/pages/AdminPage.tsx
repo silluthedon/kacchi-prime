@@ -17,7 +17,7 @@ const AdminPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [packages, setPackages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 20;
+  const [ordersPerPage, setOrdersPerPage] = useState(20);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -262,6 +262,12 @@ const AdminPage = () => {
     }
   };
 
+  const handleOrdersPerPageChange = (e) => {
+    const newPerPage = parseInt(e.target.value, 10);
+    setOrdersPerPage(newPerPage);
+    setCurrentPage(1); // Reset to first page when page size changes
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
@@ -326,6 +332,19 @@ const AdminPage = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full max-w-md px-4 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-red-600 text-white"
         />
+        <div className="mt-4">
+          <label className="block text-sm mb-1">প্রতি পেজে অর্ডার সংখ্যা</label>
+          <select
+            value={ordersPerPage}
+            onChange={handleOrdersPerPageChange}
+            className="bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-red-600"
+          >
+            <option value="5">৫</option>
+            <option value="10">১০</option>
+            <option value="15">১৫</option>
+            <option value="20">২০</option>
+          </select>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4">
