@@ -43,43 +43,42 @@ const PackageCard: React.FC<PackageCardProps> = ({
 
   return (
     <motion.div
-      className={`rounded-lg overflow-hidden ${popular 
-        ? 'border-2 border-[#FFD700] transform scale-105 shadow-xl shadow-[#FFD700]/10 z-10' 
-        : 'border border-red-600 shadow-lg'}`}
+      className="rounded-lg overflow-hidden border border-red-600 shadow-lg"
       variants={cardVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
     >
-      {popular && (
-        <div className={`font-bold text-center py-2 ${isDarkMode ? 'bg-[#FFD700] text-black' : 'bg-[#FFD700] text-black'}`}>
-          সবচেয়ে জনপ্রিয়
-        </div>
-      )}
-      
-      <div className="h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden">
         <img 
           src={image} 
           alt={title} 
           className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-110"
         />
+        {popular && (
+          <div className="absolute bottom-4 right-4 px-3 py-1 bg-gray-900/80 text-white text-xs font-bold rounded-full border border-red-600 shadow-lg">
+            সবচেয়ে জনপ্রিয়
+          </div>
+        )}
       </div>
       
-      <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-        <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
-        <div className="mt-2 mb-4">
-          <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString()} টাকা</p>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson} টাকা করে একজন)</p>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>ডেলিভারি চার্জ: {deliveryFee.toLocaleString()} টাকা</p>
-        </div>
-        
-        <div className="space-y-2 mt-4 mb-6">
-          {features.map((feature, idx) => (
-            <div key={idx} className="flex items-center">
-              <CheckCircle size={16} className="text-red-600 mr-2" />
-              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{feature}</p>
-            </div>
-          ))}
+      <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col justify-between h-[calc(100%-12rem)] min-h-[300px]`}>
+        <div>
+          <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
+          <div className="mt-2 mb-4">
+            <p className={`text-2xl font-bold ${isDarkMode ? 'text-[#FFD700]' : 'text-red-600'}`}>{price.toLocaleString('bn-BD')} টাকা</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({pricePerPerson.toLocaleString('bn-BD')} টাকা করে একজন)</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>ডেলিভারি চার্জ: {deliveryFee.toLocaleString('bn-BD')} টাকা</p>
+          </div>
+          
+          <div className="space-y-2 mt-4">
+            {features.map((feature, idx) => (
+              <div key={idx} className="flex items-center">
+                <CheckCircle size={16} className="text-red-600 mr-2" />
+                <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{feature}</p>
+              </div>
+            ))}
+          </div>
         </div>
         
         <button 

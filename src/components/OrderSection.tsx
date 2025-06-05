@@ -40,7 +40,12 @@ const OrderSection: React.FC = () => {
             ...(pkg.bonus_borhani ? ['বোনাস বোরহানি'] : []),
           ],
           popular: pkg.name.includes('২০'),
-        }));
+        })).sort((a, b) => {
+          const order = { '৪': 1, '২০': 2, '৫০': 3 };
+          const aNum = a.name.match(/[০-৯]+/)?.[0] || '০';
+          const bNum = b.name.match(/[০-৯]+/)?.[0] || '০';
+          return order[aNum] - order[bNum];
+        });
         setPackages(enrichedPackages);
       }
     };
@@ -72,7 +77,12 @@ const OrderSection: React.FC = () => {
                   ],
                 }
               : pkg
-          )
+          ).sort((a, b) => {
+            const order = { '৪': 1, '২০': 2, '৫০': 3 };
+            const aNum = a.name.match(/[০-৯]+/)?.[0] || '০';
+            const bNum = b.name.match(/[০-৯]+/)?.[0] || '০';
+            return order[aNum] - order[bNum];
+          })
         );
       })
       .subscribe();
