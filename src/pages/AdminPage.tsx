@@ -435,6 +435,7 @@ const AdminPage = () => {
                   <th className="border border-gray-700 p-3 text-left">কাস্টমার নাম</th>
                   <th className="border border-gray-700 p-3 text-left">প্যাকেজ</th>
                   <th className="border border-gray-700 p-3 text-left">পরিমাণ</th>
+                  <th className="border border-gray-700 p-3 text-left">মূল্য</th>
                   <th className="border border-gray-700 p-3 text-left">ফোন</th>
                   <th className="border border-gray-700 p-3 text-left">ইমেইল</th>
                   <th className="border border-gray-700 p-3 text-left">ঠিকানা</th>
@@ -453,6 +454,7 @@ const AdminPage = () => {
                     <td className="border border-gray-700 p-3">{order.customer_name || 'N/A'}</td>
                     <td className="border border-gray-700 p-3">{order.item || 'N/A'}</td>
                     <td className="border border-gray-700 p-3">{order.quantity || 'N/A'}</td>
+                    <td className="border border-gray-700 p-3">{order.price ? order.price.toLocaleString('bn-BD') + ' টাকা' : 'N/A'}</td>
                     <td className="border border-gray-700 p-3">{order.phone || 'N/A'}</td>
                     <td className="border border-gray-700 p-3">{order.email || 'N/A'}</td>
                     <td className="border border-gray-700 p-3">{order.address || 'N/A'}</td>

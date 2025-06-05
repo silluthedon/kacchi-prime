@@ -1,14 +1,20 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+interface SelectedPackage {
+  id: string;
+  quantity: number;
+  price: number;
+}
+
 interface OrderContextProps {
-  selectedPackage: string;
-  setSelectedPackage: (packageId: string) => void;
+  selectedPackage: SelectedPackage | null;
+  setSelectedPackage: (pkg: SelectedPackage | null) => void;
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedPackage, setSelectedPackage] = useState<string>("20person"); // Default to most popular package
+  const [selectedPackage, setSelectedPackage] = useState<SelectedPackage | null>(null); // Default to null
 
   return (
     <OrderContext.Provider value={{ selectedPackage, setSelectedPackage }}>

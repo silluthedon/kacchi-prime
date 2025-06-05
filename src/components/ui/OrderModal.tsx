@@ -18,7 +18,6 @@ type FormValues = {
   name: string;
   phone: string;
   email: string;
-  packageId: string;
   address: string;
   additionalInfo: string;
 };
@@ -31,11 +30,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
   const [formData, setFormData] = useState<FormValues | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    defaultValues: {
-      packageId: selectedPackage
-    }
-  });
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
 
   function getNextFriday(): Date {
     const today = new Date();
@@ -53,42 +48,45 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
     setFormData(data);
 
     const deliveryDateStr = deliveryDate?.toISOString().split('T')[0] || '';
-    const selectedPkg = packages.find(pkg => pkg.id === data.packageId);
-    if (!selectedPkg) {
+    const selectedPkg = packages.find(pkg => pkg.id === selectedPackage?.id);
+    if (!selectedPkg || !selectedPackage) {
       setError('অবৈধ প্যাকেজ নির্বাচন করা হয়েছে।');
       return;
     }
 
-    const { error: supabaseError } = await supabase.from('orders').insert({
-      customer_name: data.name,
-      item: selectedPkg.name,
-      quantity: 1,
-      phone: data.phone,
-      email: data.email || null,
-      address: data.address,
-      additional_info: data.additionalInfo || null,
-      delivery_date: deliveryDateStr,
-      order_status: 'pending',
-      delivery_status: 'pending',
-      payment_status: 'pending',
-    });
+    try {
+      const { error: supabaseError } = await supabase.from('orders').insert({
+        customer_name: data.name,
+        item: selectedPkg.name,
+        quantity: selectedPackage.quantity,
+        price: selectedPackage.price,
+        phone: data.phone,
+        email: data.email || null,
+        address: data.address,
+        additional_info: data.additionalInfo || null,
+        delivery_date: deliveryDateStr,
+        order_status: 'pending',
+        delivery_status: 'pending',
+        payment_status: 'pending',
+      });
 
-    if (supabaseError) {
-      setError('অর্ডার সেভ করতে ব্যর্থ হয়েছে: ' + supabaseError.message);
-      return;
+      if (supabaseError) {
+        console.error('Supabase insert error:', supabaseError);
+        setError('অর্ডার সেভ করতে ব্যর্থ হয়েছে: ' + supabaseError.message);
+        return;
+      }
+
+      console.log('Order saved:', { ...data, deliveryDate, quantity: selectedPackage.quantity, price: selectedPackage.price });
+      setTimeout(() => setOrderConfirmed(true), 1500);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('অপ্রত্যাশিত ত্রুটি: ' + (err.message || 'Unknown error'));
     }
-
-    console.log({ ...data, deliveryDate });
-    setTimeout(() => setOrderConfirmed(true), 1500);
-  };
-
-  const formatPrice = (packageId: string): string => {
-    const pkg = packages.find(p => p.id === packageId);
-    if (!pkg) return '0';
-    return (pkg.price * 0.5).toLocaleString();
   };
 
   if (!isOpen) return null;
+
+  const selectedPkg = packages.find(pkg => pkg.id === selectedPackage?.id);
 
   return (
     <div
@@ -172,7 +170,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                প্যাকেজ: {packages.find(pkg => pkg.id === formData?.packageId)?.name || 'N/A'}
+                প্যাকেজ: {selectedPkg?.name || 'N/A'}
               </motion.p>
               <motion.p
                 className="text-white mb-4"
@@ -180,13 +178,21 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                মোট মূল্য: {packages.find(pkg => pkg.id === formData?.packageId)?.price.toLocaleString()} টাকা
+                পরিমাণ: {selectedPackage?.quantity.toLocaleString('bn-BD')} জন
+              </motion.p>
+              <motion.p
+                className="text-white mb-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                মোট মূল্য: {selectedPackage?.price.toLocaleString('bn-BD')} টাকা
               </motion.p>
               <motion.p
                 className="text-white"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.8 }}
               >
                 ডেলিভারি তারিখ:{' '}
                 {deliveryDate?.toLocaleDateString('bn-BD', {
@@ -309,29 +315,45 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, packages }) =>
               </div>
 
               <div className="flex flex-col space-y-2">
-                <label htmlFor="package" className="block font-medium">
-                  প্যাকেজ
-                </label>
-                <div className="relative">
-                  <select
-                    id="package"
-                    className={`w-full pl-4 pr-10 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-red-600 appearance-none transition-all ${
-                      isDarkMode
-                        ? 'bg-gray-800 text-white border-gray-700'
-                        : 'bg-white text-black border-gray-300'
-                    }`}
-                    {...register('packageId', { required: 'প্যাকেজ নির্বাচন করুন' })}
-                  >
-                    {packages.map((pkg) => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} - {pkg.price.toLocaleString()} টাকা
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {errors.packageId && (
-                  <p className="text-red-500 text-sm">{errors.packageId.message}</p>
-                )}
+                <label className="block font-medium">প্যাকেজ</label>
+                <input
+                  type="text"
+                  value={selectedPkg?.name || 'N/A'}
+                  readOnly
+                  className={`w-full pl-4 pr-4 py-2 rounded-lg border focus:outline-none transition-all ${
+                    isDarkMode
+                      ? 'bg-gray-800 text-white border-gray-700'
+                      : 'bg-white text-black border-gray-300'
+                  }`}
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="block font-medium">পরিমাণ</label>
+                <input
+                  type="text"
+                  value={selectedPackage?.quantity.toLocaleString('bn-BD') + ' জন' || 'N/A'}
+                  readOnly
+                  className={`w-full pl-4 pr-4 py-2 rounded-lg border focus:outline-none transition-all ${
+                    isDarkMode
+                      ? 'bg-gray-800 text-white border-gray-700'
+                      : 'bg-white text-black border-gray-300'
+                  }`}
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="block font-medium">মোট মূল্য</label>
+                <input
+                  type="text"
+                  value={selectedPackage?.price.toLocaleString('bn-BD') + ' টাকা' || 'N/A'}
+                  readOnly
+                  className={`w-full pl-4 pr-4 py-2 rounded-lg border focus:outline-none transition-all ${
+                    isDarkMode
+                      ? 'bg-gray-800 text-white border-gray-700'
+                      : 'bg-white text-black border-gray-300'
+                  }`}
+                />
               </div>
 
               <div className="flex flex-col space-y-2">

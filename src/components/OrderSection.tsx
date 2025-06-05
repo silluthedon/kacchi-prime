@@ -8,10 +8,10 @@ import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../utils/supabaseClient';
 
 const OrderSection: React.FC = () => {
-  const { selectedPackage, setSelectedPackage } = useOrderContext();
+  const { setSelectedPackage } = useOrderContext();
   const { isDarkMode } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [packages, setPackages] = useState([]);
+  const [packages, setPackages] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -52,7 +52,6 @@ const OrderSection: React.FC = () => {
 
     fetchPackages();
 
-    // Realtime subscription for updates
     const subscription = supabase
       .channel('public:packages')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'packages' }, (payload) => {
@@ -92,8 +91,9 @@ const OrderSection: React.FC = () => {
     };
   }, []);
 
-  const handleOrderClick = (packageId: string) => {
-    setSelectedPackage(packageId);
+  const handleOrderClick = (packageId: string, quantity: number, price: number) => {
+    console.log('handleOrderClick - PackageID:', packageId, 'Quantity:', quantity, 'Price:', price);
+    setSelectedPackage({ id: packageId, quantity, price });
     setIsModalOpen(true);
   };
 
@@ -130,14 +130,14 @@ const OrderSection: React.FC = () => {
                 key={pkg.id}
                 title={pkg.name}
                 price={pkg.price}
-                deliveryFee={pkg.delivery_fee || 0}
                 pricePerPerson={pkg.pricePerPerson}
                 image={pkg.image}
                 features={pkg.features}
                 popular={pkg.popular}
                 index={index}
-                onOrderClick={() => handleOrderClick(pkg.id)}
+                onOrderClick={(quantity, price) => handleOrderClick(pkg.id, quantity, price)}
                 isDarkMode={isDarkMode}
+                deliveryFee={pkg.delivery_fee || 0}
               />
             ))}
           </div>
