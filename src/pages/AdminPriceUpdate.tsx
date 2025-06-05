@@ -8,6 +8,7 @@ const AdminPriceUpdate = () => {
   const [newPrices, setNewPrices] = useState({});
   const [newDeliveryFees, setNewDeliveryFees] = useState({});
   const [bonusOptions, setBonusOptions] = useState({});
+  const [deliverySchedule, setDeliverySchedule] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -39,6 +40,7 @@ const AdminPriceUpdate = () => {
 
         setUser(user);
         fetchPackages();
+        fetchDeliverySchedule();
       } catch (err) {
         setError('অজানা ত্রুটি: ' + err.message);
         toast.error('অজানা ত্রুটি: ' + err.message);
@@ -68,13 +70,29 @@ const AdminPriceUpdate = () => {
         setNewDeliveryFees(initialFees);
         setBonusOptions(initialBonuses);
       }
+    };
+
+    const fetchDeliverySchedule = async () => {
+      const { data, error } = await supabase
+        .from('delivery_schedule')
+        .select('*')
+        .order('id', { ascending: true });
+      if (error) {
+        console.error('Error fetching delivery schedule:', error);
+        toast.error('ডেলিভারি শিডিউল লোড ব্যর্থ: ' + error.message);
+      } else {
+        setDeliverySchedule(data);
+      }
       setLoading(false);
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         setUser(session?.user ?? null);
-        if (session?.user) fetchPackages();
+        if (session?.user) {
+          fetchPackages();
+          fetchDeliverySchedule();
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         navigate('/login');
@@ -118,6 +136,23 @@ const AdminPriceUpdate = () => {
     }
   };
 
+  const handleDeliveryDayUpdate = async (dayOfWeek, isEnabled) => {
+    const { error } = await supabase
+      .from('delivery_schedule')
+      .update({ is_enabled: isEnabled })
+      .eq('day_of_week', dayOfWeek);
+
+    if (error) {
+      console.error('Error updating delivery schedule:', error);
+      toast.error('ডেলিভারি দিন আপডেট ব্যর্থ: ' + error.message);
+    } else {
+      toast.success(`${dayOfWeek} এর জন্য ডেলিভারি ${isEnabled ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে!`);
+      setDeliverySchedule(deliverySchedule.map(day => 
+        day.day_of_week === dayOfWeek ? { ...day, is_enabled: isEnabled } : day
+      ));
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 sm:p-6">
@@ -141,6 +176,17 @@ const AdminPriceUpdate = () => {
       </div>
     );
   }
+
+  // Map English days to Bangla days for display
+  const dayMap = {
+    Monday: 'সোমবার',
+    Tuesday: 'মঙ্গলবার',
+    Wednesday: 'বুধবার',
+    Thursday: 'বৃহস্পতিবার',
+    Friday: 'শুক্রবার',
+    Saturday: 'শনিবার',
+    Sunday: 'রবিবার',
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-4 sm:p-6 max-w-4xl mx-auto">
@@ -248,6 +294,24 @@ const AdminPriceUpdate = () => {
           </div>
         </div>
       ))}
+
+      {/* Delivery Schedule Section */}
+      <div className="mt-8 p-4 border border-gray-700 rounded">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">ডেলিভারি শিডিউল নির্ধারণ</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {deliverySchedule.map((day) => (
+            <label key={day.day_of_week} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={day.is_enabled}
+                onChange={(e) => handleDeliveryDayUpdate(day.day_of_week, e.target.checked)}
+                className="mr-2"
+              />
+              <span className="text-sm sm:text-base">{dayMap[day.day_of_week]}</span>
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
