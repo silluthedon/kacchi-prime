@@ -224,23 +224,23 @@ const AdminPage = () => {
   const getStatusColor = (status, type) => {
     if (type === 'order_status') {
       return {
-        'Ordered': 'bg-orange-500',
-        'Confirmed': 'bg-blue-500',
-        'Date Assigned': 'bg-purple-500',
-        'Delivered': 'bg-green-500',
-      }[status] || 'bg-gray-500';
+        'Ordered': 'bg-orange-500 text-black',
+        'Confirmed': 'bg-blue-500 text-black',
+        'Date Assigned': 'bg-purple-500 text-black',
+        'Delivered': 'bg-green-500 text-black',
+      }[status] || 'bg-gray-500 text-black';
     } else if (type === 'delivery_status') {
       return {
-        'OnTheWay': 'bg-yellow-500',
-        'Delivered': 'bg-green-500',
-        'Returned': 'bg-red-500',
-      }[status] || 'bg-gray-500';
+        'OnTheWay': 'bg-yellow-500 text-black',
+        'Delivered': 'bg-green-500 text-black',
+        'Returned': 'bg-red-500 text-black',
+      }[status] || 'bg-gray-500 text-black';
     } else if (type === 'payment_status') {
       return {
-        'Unpaid': 'bg-gray-500',
-        'PartiallyPaid': 'bg-orange-500',
-        'FullyPaid': 'bg-green-500',
-      }[status] || 'bg-gray-500';
+        'Unpaid': 'bg-gray-500 text-black',
+        'PartiallyPaid': 'bg-orange-500 text-black',
+        'FullyPaid': 'bg-green-500 text-black',
+      }[status] || 'bg-gray-500 text-black';
     }
   };
 
@@ -475,13 +475,13 @@ const AdminPage = () => {
                     </td>
                     <td className="border border-gray-700 p-3">
                       <div className="relative inline-block">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.order_status, 'order_status')}`}>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.order_status, 'order_status')}`}>
                           {order.order_status || 'N/A'}
                         </span>
                         <select
                           value={order.order_status || ''}
                           onChange={(e) => handleStatusChange(order.id, 'order_status', e.target.value)}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer text-black bg-white"
                         >
                           <option value="Ordered">Ordered</option>
                           <option value="Confirmed">Confirmed</option>
@@ -492,13 +492,13 @@ const AdminPage = () => {
                     </td>
                     <td className="border border-gray-700 p-3">
                       <div className="relative inline-block">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.delivery_status, 'delivery_status')}`}>
                           {order.delivery_status || 'N/A'}
                         </span>
                         <select
                           value={order.delivery_status || ''}
                           onChange={(e) => handleStatusChange(order.id, 'delivery_status', e.target.value)}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer text-black bg-white"
                         >
                           <option value="OnTheWay">On The Way</option>
                           <option value="Delivered">Delivered</option>
@@ -508,13 +508,13 @@ const AdminPage = () => {
                     </td>
                     <td className="border border-gray-700 p-3">
                       <div className="relative inline-block">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold text-white ${getStatusColor(order.payment_status, 'payment_status')}`}>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.payment_status, 'payment_status')}`}>
                           {order.payment_status || 'N/A'}
                         </span>
                         <select
                           value={order.payment_status || ''}
                           onChange={(e) => handleStatusChange(order.id, 'payment_status', e.target.value)}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer text-black bg-white"
                         >
                           <option value="Unpaid">Unpaid</option>
                           <option value="FullyPaid">Fully Paid</option>
