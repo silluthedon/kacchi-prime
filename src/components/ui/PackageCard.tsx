@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Plus } from 'lucide-react';
 
 interface PackageCardProps {
   title: string;
@@ -103,7 +103,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
             onClick={handleIncrease}
             style={{ cursor: 'pointer' }}
           >
-            {displayTitle} <span className="text-red-600">+</span>
+            {displayTitle} <Plus size={20} className="inline text-red-600" />
           </h3>
           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
             মোট পরিমাণ: {totalPersons.toLocaleString('bn-BD')} জন
