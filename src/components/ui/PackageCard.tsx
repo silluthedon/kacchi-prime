@@ -56,7 +56,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
           className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-110"
         />
         {popular && (
-          <div className="absolute bottom-4 right-4 px-3 py-1 bg-gray-900/80 text-white text-xs font-bold rounded-full border border-red-600 shadow-lg">
+          <div className="absolute bottom-4 right-4 px-3 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full border border-red-600 shadow-lg">
             সবচেয়ে জনপ্রিয়
           </div>
         )}
