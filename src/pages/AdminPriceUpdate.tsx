@@ -148,6 +148,12 @@ const AdminPriceUpdate = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">এডমিন পেজ: দাম ও ডেলিভারি চার্জ আপডেট</h1>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button
+            onClick={() => navigate('/')}
+            className="py-2 px-4 bg-green-600 rounded-md text-white font-bold hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto"
+          >
+            হোম পেজে যান
+          </button>
+          <button
             onClick={() => navigate('/admin')}
             className="py-2 px-4 bg-gray-600 rounded-md text-white font-bold hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
           >
