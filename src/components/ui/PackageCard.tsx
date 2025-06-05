@@ -83,7 +83,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
         
         <button 
           onClick={onOrderClick}
-          className={`w-full py-3 rounded-md font-bold transition transform hover:scale-105 ${
+          className={`w-full py-3 rounded-md font-bold transition transform hover:scale-105 mt-4 ${
             popular 
               ? 'bg-[#FFD700] text-black hover:bg-[#e5c200] hover:shadow-[#FFD700]/20 hover:shadow-lg' 
               : isDarkMode 
