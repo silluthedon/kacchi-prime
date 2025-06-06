@@ -18,12 +18,12 @@ const SpecialSection: React.FC = () => {
       description: "হোটেল রেস্তোরাঁয় সাধারণত ব্যবহার করা হয় বাসমতি চাল। কিন্তু, ঢাকাই কাচ্চির অথেনটিক রেসিপি অনুযায়ী বিয়েবাড়ির কাচ্চিতে ব্যবহার করা হয় বাছাই করা প্রিমিয়াম চিনিগুড়া চাল, যেটি খাসির তুলতুলে মাংসের সাথে পারফেক্ট কম্বিনেশন।"
     },
     {
-      image: "https://img.freepik.com/premium-photo/food-critic-tasting-kacchi-biryani-highend-restaurant_636537-470590.jpg",
+      image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEguUepUnnWLRqaWaRF9g-fZz_TfKgATyvojIxoh0T7vVn3mN64YRb19QJEvOZtPkMZcO1Kii7TIvkiJzajznpDvBf2q54I5hqr9Fa1YlzI4wrtHD1l1pGowDIJFLtETYt8zh6YHgeKYYCH0/s1600/4.jpg",
       title: "৩) রান্নার পদ্ধতি",
       description: "অল্প তেল, অরিজিনাল ঘি, এবং অল্প, কিন্তু প্রিমিয়াম মসলা ও উপাদানে রান্না হয় বিয়েবাড়ির কাচ্চি। ফলে, খাসির তুলতুলে মাংস এবং চালের প্রায় অরিজিনাল কালারটাই থাকে, অজস্র মসলার কারণে এর মূল স্বাদ এবং কালার হারিয়ে যায়না।"
     },
     {
-      image: "https://img.freepik.com/premium-photo/ghee-being-poured-pot-kacchi-biryani_636537-471216.jpg",
+      image: "https://s3.amazonaws.com/somewherein/pictures/jadid/jadid-1453901213-ab5df73_xlarge.jpg",
       title: "৪) দক্ষ বাবুর্চি",
       description: "অল্প কয়েকজন দক্ষ বাবুর্চি বছরের পর বছর তাদের দক্ষতা এবং সিক্রেট কিছু ফর্মূলা ব্যবহার করে এই অথেনটিক কাচ্চি রান্নার দক্ষতা অর্জন করেছেন, যারা শুধুমাত্র বিয়ে কিংবা বিভিন্ন অনুষ্ঠানেই কাজ করেন।"
     }
