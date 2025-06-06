@@ -86,14 +86,6 @@ const FaqSection: React.FC = () => {
           </motion.div>
         ))}
       </div>
-      
-      <p
-        className={`text-sm italic text-center mt-8 ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}
-      >
-        আরও প্রশ্ন/উত্তর যোগ হবে পরে
-      </p>
     </section>
   );
 };

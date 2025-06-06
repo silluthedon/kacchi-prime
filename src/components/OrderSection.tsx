@@ -26,7 +26,7 @@ const OrderSection: React.FC = () => {
           ...pkg,
           pricePerPerson: pkg.price / (pkg.name.includes('৪') ? 4 : pkg.name.includes('২০') ? 20 : 50),
           image: pkg.name.includes('৪')
-            ? 'https://images.pexels.com/photos/7426867/pexels-photo-7426867.jpeg?auto=compress&cs=tinysrgb&w=1600'
+            ? 'https://img.freepik.com/premium-photo/indian-mutton-biryani-prepared-basmati-rice-served-with-yogurt-dip-moody-background-selective-focus_466689-53059.jpg?semt=ais_hybrid&w=740'
             : pkg.name.includes('২০')
             ? 'https://img.freepik.com/premium-photo/fall-bone-meat-mutton-kacchi-biryani-realistic-photo_27550-6772.jpg'
             : 'https://images.othoba.com/images/thumbs/0720187_mutton-kacchi-full-bashmoti.jpeg',

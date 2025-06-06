@@ -15,23 +15,6 @@ const Footer: React.FC = () => {
               &copy; {new Date().getFullYear()} Kacchi Prime. All rights reserved.|$|
             </p>
           </div>
-          
-          <div className="text-center">
-            <h3 className="text-white font-bold mb-4">যোগাযোগ</h3>
-            <div className="flex items-center justify-center mb-3">
-              <Mail size={16} className="text-red-600 mr-2" />
-              <a href="mailto:support@kacchiprime.com" className="text-gray-300 hover:text-white transition">
-                support@kacchiprime.com
-              </a>
-            </div>
-            <div className="flex items-center justify-center">
-              <Phone size={16} className="text-red-600 mr-2" />
-              <a href="tel:+8801234567890" className="text-gray-300 hover:text-white transition">
-                +880 1234-567890
-              </a>
-            </div>
-          </div>
-          
           <div className="text-center md:text-right">
             <h3 className="text-white font-bold mb-4">সোশ্যাল মিডিয়া</h3>
             <div className="flex items-center justify-center md:justify-end space-x-4">
